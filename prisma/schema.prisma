@@ -1,0 +1,105 @@
+// ==============================================================================
+// PHẦN 1: KHAI BÁO CẤU HÌNH CHUNG
+// ==============================================================================
+
+// Cấu hình Prisma Client (Nơi sinh ra code TypeScript)
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma" 
+}
+
+// Cấu hình kết nối Database
+datasource db {
+  provider = "sqlite"
+}
+
+// ==============================================================================
+// PHẦN 2: ĐỊNH NGHĨA CÁC KIỂU DỮ LIỆU TỰ TẠO (ENUMS)
+// ==============================================================================
+// [SQL CONCEPT]: SQLite không có kiểu ENUM thực sự, nhưng Prisma sẽ giả lập bằng cách 
+// ép kiểu (CHECK constraint) hoặc lưu dưới dạng String. 
+// Tác dụng: Giới hạn giá trị đầu vào, chống gõ sai (VD: không thể gõ "Reading", chỉ được "CURRENTLY_READING").
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Shelf {
+  CURRENTLY_READING
+  WANT_TO_READ
+  READ
+  NONE
+}
+
+// ==============================================================================
+// PHẦN 3: CÁC BẢNG (MODELS) VÀ MỐI QUAN HỆ
+// ==============================================================================
+
+// ------------------------------------------------------------------------------
+// BẢNG 1: USER (Người dùng)
+// ------------------------------------------------------------------------------
+model User {
+  id        String   @id @default(uuid()) // [KEY]: Dùng String + UUID (Chuẩn công nghiệp, bảo mật)
+  
+  // [CONSTRAINT - UNIQUE]: Cột email không được phép trùng lặp.
+  // [SQL]: Khi tạo bảng, Prisma sẽ thêm lệnh CREATE UNIQUE INDEX cho cột này.
+  email     String   @unique 
+  
+  name      String
+  role      Role     @default(USER)       // [DEFAULT]: Mặc định tạo mới sẽ là USER
+  
+  // [DATA TYPE]: Lưu thời gian. @default(now()) giống như CURRENT_TIMESTAMP trong SQL.
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt          // Tự động cập nhật thời gian mỗi khi có thay đổi
+
+  // [RELATIONSHIP - 1-NHIỀU]: Một User có thể có NHIỀU (nhiều) cuốn sách.
+  // Dấu [] nghĩa là mảng. Trường này không tạo ra cột trong DB, nó chỉ dùng để truy vấn.
+  books     Book[]   
+}
+
+// ------------------------------------------------------------------------------
+// BẢNG 2: AUTHOR (Tác giả)
+// ------------------------------------------------------------------------------
+model Author {
+  id    String @id @default(uuid())
+  name  String
+  
+  // [CONSTRAINT - INDEX]: Đánh chỉ mục (Index) cho cột name để tìm kiếm nhanh hơn.
+  // [SQL]: Lệnh này tương đương với CREATE INDEX idx_author_name ON Author(name);
+  // Tại sao cần? Khi bạn tìm kiếm "Tác giả tên là Nam", nó sẽ không phải quét cả bảng.
+  @@index([name]) 
+
+  // [RELATIONSHIP - NHIỀU-NHIỀU]: Một tác giả viết NHIỀU sách, một sách có NHIỀU tác giả.
+  // Prisma sẽ tự động tạo ra một bảng trung gian ẩn tên là "_AuthorToBook" để nối 2 bảng này.
+  books Book[] 
+}
+
+// ------------------------------------------------------------------------------
+// BẢNG 3: BOOK (Cuốn sách)
+// ------------------------------------------------------------------------------
+model Book {
+  id        String   @id @default(uuid())
+  title     String
+  thumbnail String?
+  
+  // Sử dụng kiểu dữ liệu tự tạo Shelf ở trên
+  shelf     Shelf    @default(NONE)
+
+  // [RELATIONSHIP - KHÓA NGOẠI 1-N]: 
+  // Cuốn sách này thuộc về 1 User.
+  // userId là cột thực sự xuất hiện trong bảng Book dưới Database.
+  userId    String
+  // @relation: Liên kết cột userId ở bảng này với cột id ở bảng User.
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // [ON DELETE CASCADE]: Nếu User bị xóa, TOÀN BỘ sách của User đó cũng tự động bị xóa theo.
+
+  // [RELATIONSHIP - NHIỀU-NHIỀU VỚI AUTHOR]:
+  // Tự động sinh ra bảng trung gian.
+  authors   Author[]
+  
+  // [INDEX]: Tạo chỉ mục kết hợp (Composite Index) cho userId và shelf.
+  // [SQL]: CREATE INDEX idx_user_shelf ON Book(userId, shelf);
+  // Tại sao? Vì trang chủ của ta thường xuyên query: "Lấy sách của User X thuộc kệ CURRENTLY_READING".
+  @@index([userId, shelf]) 
+}

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cẩm Nang Thực Chiến: Next.js + Prisma (Next.js 14/15)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.65; color: #24292e; margin: 0; background: #fff; display: flex; }
+  
+  /* SIDEBAR */
+  .sidebar { position: fixed; top: 0; left: 0; width: 320px; height: 100vh; background: #f6f8fa; border-right: 1px solid #e1e4e8; padding: 30px 20px; overflow-y: auto; }
+  .sidebar h3 { margin-top: 0; color: #0366d6; font-size: 1.2em; border-bottom: 2px solid #e1e4e8; padding-bottom: 10px; }
+  .sidebar ul { list-style: none; padding: 0; margin: 0; }
+  .sidebar li { margin: 8px 0; }
+  .sidebar a { color: #0366d6; text-decoration: none; display: block; padding: 6px 10px; border-radius: 4px; transition: 0.2s; font-size: 0.95em;}
+  .sidebar a:hover { background: #e1e4e8; }
+
+  /* MAIN CONTENT */
+  .content { margin-left: 320px; padding: 40px 60px; max-width: 1100px; width: 100%; }
+  h1 { color: #0366d6; border-bottom: 3px solid #0366d6; padding-bottom: 12px; font-size: 2.2em; margin-top: 0; }
+  h2 { color: #24292e; border-bottom: 1px solid #e1e4e8; padding-bottom: 8px; margin-top: 48px; font-size: 1.6em; scroll-margin-top: 20px; }
+  h3 { color: #24292e; margin-top: 32px; font-size: 1.25em; }
+  
+  /* CODE BLOCKS */
+  .code-container { position: relative; margin: 16px 0; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.9em; line-height: 1.7; }
+  code { font-family: inherit; }
+  .comment { color: #6a9955; font-style: italic; } 
+  .keyword { color: #569cd6; } 
+  .string { color: #ce9178; } 
+  
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+  .info { background: #e6f4ff; border-left: 4px solid #0366d6; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+  .warning { background: #ffeef0; border-left: 4px solid #d73a49; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h3>MỤC LỤC</h3>
+  <ul>
+    <li><strong>1. Cấu hình & CLI</strong></li>
+    <li style="padding-left: 15px;"><a href="#cli">Lệnh Terminal</a></li>
+    <li style="padding-left: 15px;"><a href="#env">File .env</a></li>
+    <li style="padding-left: 15px;"><a href="#prisma-config">File prisma7.config.ts</a></li>
+
+    <li style="margin-top: 15px;"><strong>2. Database (Prisma)</strong></li>
+    <li style="padding-left: 15px;"><a href="#schema">File schema.prisma</a></li>
+    <li style="padding-left: 15px;"><a href="#seed">File seed.ts (Dữ liệu mẫu)</a></li>
+
+    <li style="margin-top: 15px;"><strong>3. Next.js (Logic & UI)</strong></li>
+    <li style="padding-left: 15px;"><a href="#lib">File lib/prisma.ts</a></li>
+    <li style="padding-left: 15px;"><a href="#page">File app/page.tsx</a></li>
+    <li style="padding-left: 15px;"><a href="#actions">File actions/books.ts</a></li>
+  </ul>
+</nav>
+
+<main class="content">
+  <h1>Toàn Tập Dự Án MyReads (Next.js + Prisma)</h1>
+  <p>Tài liệu này chứa toàn bộ mã nguồn và giải thích chi tiết cơ chế hoạt động (OOP, Memory, Async/Await).</p>
+
+  <!-- PHẦN 1 -->
+  <h2 id="cli">1. Lệnh Terminal (Cài đặt & Khởi tạo)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="comment"># 1. Tạo dự án Next.js. Lệnh này cấp phát thư mục, cài React, TypeScript, Tailwind.</span>
+npx create-next-app@latest myreads-next
+cd myreads-next
+
+<span class="comment"># 2. Cài Prisma 7 (Bản ổn định hỗ trợ SQLite).</span>
+<span class="comment"># prisma (CLI tool) cài vào devDependencies để tạo bảng.</span>
+npm install prisma@7 --save-dev
+<span class="comment"># @prisma/client (ORM engine) cài vào dependencies để chạy app.</span>
+npm install @prisma/client@7
+
+<span class="comment"># 3. Cài Adapter cho SQLite (Prisma 7 bắt buộc phải có)</span>
+<span class="comment"># better-sqlite3 là thư viện C++ giao tiếp vật lý với file .db</span>
+npm install @prisma/adapter-better-sqlite3 better-sqlite3
+
+<span class="comment"># 4. Cài tsx để chạy file seed.ts (TypeScript) trực tiếp bằng Node.js</span>
+npm install -D tsx
+
+<span class="comment"># 5. Khởi tạo Prisma. Tạo folder prisma/ và file schema.prisma.</span>
+npx prisma@prev init --datasource-provider sqlite</code></pre>
+  </div>
+
+  <h2 id="env">2. File `.env` (Môi trường)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="comment"># Chứa Connection String trỏ đến file SQLite cục bộ.</span>
+<span class="comment"># `file:` là protocol, `./` là thư mục hiện tại.</span>
+DATABASE_URL=<span class="string">"file:./dev.db"</span></code></pre>
+  </div>
+
+  <h2 id="prisma-config">3. File `prisma7.config.ts` (Cấu hình CLI)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="keyword">import</span> <span class="string">'dotenv/config'</span>; <span class="comment">// Load file .env vào process.env</span>
+<span class="keyword">import</span> { defineConfig } <span class="keyword">from</span> <span class="string">'prisma/config'</span>;
+
+<span class="keyword">export default</span> defineConfig({
+  <span class="comment">// Chỉ định file schema chứa các Model.</span>
+  schema: <span class="string">'prisma/schema.prisma'</span>,
+  
+  migrations: {
+    <span class="comment">// Lệnh dùng khi chạy `npx prisma db seed`.</span>
+    <span class="comment">// Dùng tsx để thực thi file TS thay vì Node thuần.</span>
+    seed: <span class="string">'tsx ./prisma/seed.ts'</span>, 
+  },
+  
+  datasource: {
+    <span class="comment">// Lấy url từ biến môi trường. Dấu ! khẳng định biến chắc chắn có giá trị (không undefined).</span>
+    url: process.env.DATABASE_URL!,
+  },
+});</code></pre>
+  </div>
+
+  <!-- PHẦN 2 -->
+  <h2 id="schema">4. File `prisma/schema.prisma` (Định nghĩa Database)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="comment">// Cấu hình Prisma Client sinh mã nguồn TypeScript.</span>
+generator client {
+  provider = <span class="string">"prisma-client-js"</span>
+  output   = <span class="string">"../generated/prisma"</span> <span class="comment">// Nơi chứa code sinh ra (import từ đây)</span>
+}
+
+datasource db {
+  provider = <span class="string">"sqlite"</span>
+}
+
+<span class="comment">// Model User: Định nghĩa bảng Users</span>
+model User {
+  id    <span class="keyword">String</span> @id @default(uuid()) 
+  <span class="comment">// @id: Primary Key. @default(uuid()): Hàm sinh chuỗi ID ngẫu nhiên (VD: 550e8400).</span>
+  
+  email <span class="keyword">String</span> @unique              
+  <span class="comment">// @unique: Tạo UNIQUE INDEX. Nếu insert trùng email, DB báo lỗi.</span>
+  
+  name  <span class="keyword">String</span>
+  
+  books Book[]                        
+  <span class="comment">// [Quan hệ 1-N]: Trường ảo, KHÔNG tạo cột trong SQL. Dùng để Prisma query: user.books</span>
+}
+
+<span class="comment">// Model Book: Định nghĩa bảng Books</span>
+model Book {
+  id     <span class="keyword">String</span> @id @default(uuid())
+  title  <span class="keyword">String</span>
+  shelf  <span class="keyword">String</span> @default(<span class="string">"none"</span>)
+  
+  userId <span class="keyword">String</span>                   
+  <span class="comment">// [Foreign Key]: Tạo cột thật trong SQLite, lưu ID của User.</span>
+  
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  <span class="comment">// @relation: Khai báo Foreign Key Constraint.</span>
+  <span class="comment">// onDelete: Cascade: Cơ chế Trigger. Xóa User cha -> Tự động xóa Sách của user đó.</span>
+}</code></pre>
+  </div>
+
+  <h2 id="seed">5. File `prisma/seed.ts` (Bơm dữ liệu mẫu)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="keyword">import</span> { PrismaClient } <span class="keyword">from</span> <span class="string">'../generated/prisma'</span>;
+<span class="keyword">import</span> { PrismaBetterSqlite3 } <span class="keyword">from</span> <span class="string">'@prisma/adapter-better-sqlite3'</span>;
+
+<span class="comment">// 1. Khởi tạo Driver (Adapter). `new` cấp phát RAM cho instance.</span>
+<span class="comment">// Truyền url để Adapter biết file DB vật lý nằm ở đâu.</span>
+<span class="keyword">const</span> adapter = <span class="keyword">new</span> PrismaBetterSqlite3({ 
+  url: <span class="string">'file:./dev.db'</span> 
+});
+
+<span class="comment">// 2. Khởi tạo ORM Engine và Tiêm (Dependency Injection) Adapter vào.</span>
+<span class="keyword">const</span> prisma = <span class="keyword">new</span> PrismaClient({ adapter });
+
+<span class="keyword">async function</span> main() {
+  <span class="comment">// 3. `await` tạm dừng luồng, chờ lệnh INSERT chạy xong.</span>
+  <span class="keyword">const</span> user = <span class="keyword">await</span> prisma.user.create({
+    data: { name: <span class="string">"Admin"</span>, email: <span class="string">"admin@test.com"</span> }
+  });
+
+  <span class="comment">// 4. Sử dụng ID của user vừa tạo để gán Foreign Key cho sách.</span>
+  <span class="keyword">await</span> prisma.book.create({
+    data: { title: <span class="string">"Clean Code"</span>, shelf: <span class="string">"read"</span>, userId: user.id }
+  });
+}
+
+main().catch(e =&gt; console.error(e));</code></pre>
+  </div>
+
+  <!-- PHẦN 3 -->
+  <h2 id="lib">6. File `lib/prisma.ts` (Kết nối toàn cục)</h2>
+  <div class="info">
+    <strong>Tại sao cần file này?</strong> Next.js có tính năng Hot Reload (sửa code là tải lại ngay). Nếu cứ tạo `new PrismaClient()` mỗi lần tải lại, hàng trăm kết nối DB sẽ bị rò rỉ (Memory Leak). Ta dùng biến `global` để tái sử dụng duy nhất 1 kết nối.
+  </div>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="keyword">import</span> { PrismaClient } <span class="keyword">from</span> <span class="string">'../generated/prisma'</span>;
+<span class="keyword">import</span> { PrismaBetterSqlite3 } <span class="keyword">from</span> <span class="string">'@prisma/adapter-better-sqlite3'</span>;
+
+<span class="keyword">const</span> adapter = <span class="keyword">new</span> PrismaBetterSqlite3({ url: <span class="string">'file:./dev.db'</span> });
+
+<span class="comment">// Khai báo type cho biến global để TypeScript không báo lỗi.</span>
+<span class="keyword">const</span> globalForPrisma = global <span class="keyword">as unknown as</span> { prisma: PrismaClient };
+
+<span class="comment">// Logic: Dùng lại (||) instance cũ trong global, nếu chưa có mới tạo mới.</span>
+<span class="keyword">export const</span> prisma = globalForPrisma.prisma || <span class="keyword">new</span> PrismaClient({ adapter });
+
+<span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) globalForPrisma.prisma = prisma;</code></pre>
+  </div>
+
+  <h2 id="page">7. File `app/page.tsx` (Server Component)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="keyword">import</span> { prisma } <span class="keyword">from</span> <span class="string">'../lib/prisma'</span>;
+<span class="keyword">import</span> { updateShelf } <span class="keyword">from</span> <span class="string">'../actions/books'</span>;
+
+<span class="comment">// `async` function: Code chạy trên Server. Next.js hỗ trợ Component bất đồng bộ.</span>
+<span class="keyword">export default async function</span> Home() {
+  
+  <span class="comment">// `await`: Tạm dừng luồng, nhường CPU cho request khác trong khi chờ I/O đọc file DB.</span>
+  <span class="comment">// `.findMany()`: Gọi ORM sinh câu lệnh SELECT * FROM Book.</span>
+  <span class="comment">// `include`: Yêu cầu thực hiện JOIN hoặc query phụ để lấy User liên quan.</span>
+  <span class="keyword">const</span> books = <span class="keyword">await</span> prisma.book.findMany({
+    include: { user: <span class="keyword">true</span> }
+  });
+
+  <span class="keyword">return</span> (
+    &lt;main style={{ padding: <span class="string">"40px"</span> }}&gt;
+      &lt;h1&gt;Tủ Sách&lt;/h1&gt;
+      &lt;ul&gt;
+        <span class="comment">{/* `.map()`: Trả về mảng React Elements. `key` giúp thuật toán Diff của React tối ưu DOM. */}</span>
+        {books.map((book) =&gt; (
+          &lt;li key={book.id}&gt;
+            &lt;strong&gt;{book.title}&lt;/strong&gt; - {book.user.name}
+            
+            <span class="comment">{/* Form gọi Server Action trực tiếp (không qua API Route) */}</span>
+            &lt;form action={<span class="keyword">async</span> (formData) =&gt; {
+              <span class="string">"use server"</span>;
+              <span class="keyword">const</span> newShelf = formData.get(<span class="string">"shelf"</span>) <span class="keyword">as string</span>;
+              <span class="keyword">await</span> updateShelf(book.id, newShelf);
+            }}&gt;
+              &lt;select name=<span class="string">"shelf"</span> defaultValue={book.shelf} onChange={(e) =&gt; e.target.form?.requestSubmit()}&gt;
+                &lt;option value=<span class="string">"read"</span>&gt;Đã đọc&lt;/option&gt;
+                &lt;option value=<span class="string">"none"</span>&gt;Bỏ chọn&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/form&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+  </div>
+
+  <h2 id="actions">8. File `actions/books.ts` (Server Action)</h2>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code><span class="string">"use server"</span>; <span class="comment">// Directive: Báo Next.js Compiler đây là Server Code, tạo RPC Endpoint.</span>
+
+<span class="keyword">import</span> { prisma } <span class="keyword">from</span> <span class="string">'../lib/prisma'</span>;
+<span class="keyword">import</span> { revalidatePath } <span class="keyword">from</span> <span class="string">'next/cache'</span>;
+
+<span class="keyword">export async function</span> updateShelf(bookId: string, shelf: string) {
+  <span class="comment">// 1. Thực thi lệnh UPDATE vào Database thông qua ORM.</span>
+  <span class="keyword">await</span> prisma.book.update({
+    where: { id: bookId }, <span class="comment">// Mệnh đề WHERE</span>
+    data: { shelf: shelf } <span class="comment">// Mệnh đề SET</span>
+  });
+
+  <span class="comment">// 2. Cache Invalidation.</span>
+  <span class="comment">// Next.js lưu cache HTML của trang để load cực nhanh. </span>
+  <span class="comment">// Hàm này xóa cache của route '/', buộc Next.js phải chạy lại Component để lấy data mới.</span>
+  revalidatePath(<span class="string">'/'</span>);
+}</code></pre>
+  </div>
+
+</main>
+
+<script>
+  function copyCode(btn) {
+    const codeText = btn.nextElementSibling.innerText;
+    navigator.clipboard.writeText(codeText).then(() => {
+      const originalText = btn.innerText;
+      btn.innerText = "Đã Copy!";
+      setTimeout(() => { btn.innerText = originalText; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
