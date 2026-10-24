@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Cheat Sheet — Bản rà soát và bổ sung</title>
+<style>
+  /* ================= CSS CƠ BẢN ================= */
+  * { box-sizing: border-box; }
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+    line-height: 1.65; 
+    color: #24292e; 
+    margin: 0; 
+    background: #fff; 
+    display: flex;
+  }
+
+  /* ================= SIDEBAR (CỘT TRÁI) ================= */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100vh;
+    background: #f6f8fa;
+    border-right: 1px solid #e1e4e8;
+    padding: 30px 20px;
+    overflow-y: auto;
+  }
+  .sidebar h3 { margin-top: 0; color: #0366d6; font-size: 1.2em; border-bottom: 2px solid #e1e4e8; padding-bottom: 10px; }
+  .sidebar ol { margin: 0; padding-left: 20px; font-size: 0.95em; }
+  .sidebar li { margin: 8px 0; }
+  .sidebar a { color: #0366d6; text-decoration: none; display: block; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+  .sidebar a:hover { background: #e1e4e8; text-decoration: none; }
+
+  /* ================= NỘI DUNG CHÍNH (CỘT PHẢI) ================= */
+  .content {
+    margin-left: 300px; /* Chừa khoảng trống cho sidebar */
+    padding: 40px 60px;
+    max-width: 1000px;
+    width: 100%;
+  }
+
+  /* ================= TYPOGRAPHY & CODE ================= */
+  h1 { color: #0366d6; border-bottom: 3px solid #0366d6; padding-bottom: 12px; font-size: 2.2em; margin-top: 0; }
+  h2 { color: #24292e; border-bottom: 1px solid #e1e4e8; padding-bottom: 8px; margin-top: 48px; font-size: 1.6em; scroll-margin-top: 20px; }
+  h3 { color: #24292e; margin-top: 32px; font-size: 1.25em; }
+  h4 { color: #586069; margin-top: 24px; font-size: 1.05em; }
+  p { margin: 12px 0; }
+  
+  code { background: #f6f8fa; padding: 2px 7px; border-radius: 4px; font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.9em; color: #d73a49; }
+  pre { background: #f6f8fa; padding: 16px 20px; border-radius: 6px; overflow-x: auto; border-left: 4px solid #0366d6; font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.88em; color: #24292e; line-height: 1.55; }
+  pre code { background: none; padding: 0; color: #24292e; }
+  .comment { color: #6a737d; font-style: italic; }
+  
+  /* ================= BẢNG VÀ NOTE ================= */
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 0.95em; }
+  th, td { border: 1px solid #d1d5da; padding: 10px 14px; text-align: left; vertical-align: top; }
+  th { background: #f1f8ff; font-weight: 600; }
+  tr:nth-child(even) { background: #fafbfc; }
+  
+  .note { background: #fff8c5; border-left: 4px solid #d9b600; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+  .warning { background: #ffeef0; border-left: 4px solid #d73a49; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+  .info { background: #e6f4ff; border-left: 4px solid #0366d6; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+  .success { background: #e6ffed; border-left: 4px solid #28a745; padding: 14px 18px; border-radius: 4px; margin: 18px 0; }
+
+  /* Các thẻ Card cho lệnh */
+  .flag-card { border: 1px solid #d1d5da; border-radius: 8px; padding: 16px 20px; margin: 16px 0; background: #fafbfc; }
+  .flag-card h4 { margin-top: 0; color: #0366d6; font-size: 1.15em; }
+  .flag-card .meaning { font-weight: 600; color: #24292e; margin: 8px 0; }
+  
+  hr { border: none; border-top: 1px solid #e1e4e8; margin: 40px 0; }
+  ul, ol { margin: 12px 0; padding-left: 28px; }
+  li { margin: 6px 0; }
+  
+  .footer { text-align: center; color: #586069; font-size: 0.9em; margin-top: 60px; padding-top: 20px; border-top: 1px solid #e1e4e8; }
+  .steps { background: #f6f8fa; border-radius: 8px; padding: 20px 28px; margin: 20px 0; border: 1px solid #e1e4e8; }
+
+  /* Responsive cho màn hình nhỏ */
+  @media (max-width: 900px) {
+    body { flex-direction: column; }
+    .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #e1e4e8; }
+    .content { margin-left: 0; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<nav class="sidebar">
+  <h3>MỤC LỤC</h3>
+  <ol>
+    <li><a href="#p1">Khởi tạo &amp; Cấu hình</a></li>
+    <li><a href="#p2">4 tầng của Git</a></li>
+    <li><a href="#p3">Kiểm tra trạng thái</a></li>
+    <li><a href="#p4">Add &amp; Commit</a></li>
+    <li><a href="#p5">Xem lịch sử</a></li>
+    <li><a href="#p6">Branch</a></li>
+    <li><a href="#p7">Merge &amp; Conflict</a></li>
+    <li><a href="#p8">Push, Pull, Fetch</a></li>
+    <li><a href="#p9">Upstream &amp; Push branch mới</a></li>
+    <li><a href="#p10">Hoàn tác</a></li>
+    <li><a href="#p11">Stash</a></li>
+    <li><a href="#p12">Remote</a></li>
+    <li><a href="#p13">.gitignore</a></li>
+    <li><a href="#p14">Tag</a></li>
+    <li><a href="#p15">Workflow hàng ngày</a></li>
+    <li><a href="#p16">Lệnh nâng cao</a></li>
+    <li><a href="#p17">HEAD, ^, ~, Hash</a></li>
+    <li><a href="#p18">Flag thường gặp</a></li>
+    <li><a href="#p19">Lệnh cũ vs Lệnh mới</a></li>
+    <li><a href="#p20">Lấy lại branch đã xóa</a></li>
+    <li><a href="#p21">Lệnh SAI thường gặp</a></li>
+    <li><a href="#p22">Thoát Vim &amp; Pager</a></li>
+    <li><a href="#p23">VS Code Integration</a></li>
+    <li><a href="#p24">Lỗi thường gặp</a></li>
+    <li><a href="#p25">Bảng tra cứu nhanh</a></li>
+    <li><a href="#p26">5 quy tắc vàng</a></li>
+    <li><a href="#p27">Xử lý merge conflict</a></li>
+    <li><a href="#p28">Lệnh an toàn &amp; lệnh nguy hiểm</a></li>
+    <li><a href="#p29">Tài liệu chính thức</a></li>
+  </ol>
+</nav>
+
+<!-- ================= NỘI DUNG CHÍNH ================= -->
+<main class="content">
+
+  <h1>GIT CHEAT SHEET — BẢN RÀ SOÁT 2026</h1>
+  <p><em>Tra cứu lệnh Git, ý nghĩa, flag và workflow thường dùng. Tài liệu này ưu tiên tính chính xác và an toàn hơn việc liệt kê mọi option có thể có.</em></p>
+  <div class="info">
+    <strong>Trước khi chạy lệnh:</strong> dùng <code>git status</code> để xem trạng thái hiện tại. Các lệnh như <code>git reset --hard</code>, <code>git clean -fd</code>, <code>git rm -rf</code> và <code>git push --force</code> có thể làm mất dữ liệu hoặc ghi đè lịch sử. Đọc kỹ phần cảnh báo trước khi sử dụng.
+  </div>
+
+  <!-- ========== PHẦN 1 ========== -->
+  <h2 id="p1">1. Khởi tạo &amp; Cấu hình</h2>
+
+  <h3>1.1. Cài đặt Git</h3>
+  <div class="flag-card">
+    <h4>git --version</h4>
+    <div class="meaning">Nghĩa: <strong>Phiên bản</strong> — Kiểm tra Git đã cài chưa</div>
+    <pre><code>git --version
+<span class="comment"># Kết quả: git version 2.42.0</span></code></pre>
+  </div>
+
+  <h3>1.2. Cấu hình tác giả commit</h3>
+  <p>Đây là tên và email được ghi vào metadata của commit; chúng không tự đăng nhập GitHub cho a. Dùng <code>--global</code> để áp dụng cho các repository của user hiện tại trên máy này.</p>
+  <div class="flag-card">
+    <h4>git config --global user.name</h4>
+    <div class="meaning">Nghĩa: đặt tên tác giả commit</div>
+    <pre><code>git config --global user.name "Nguyen Van A"
+
+git config --get user.name <span class="comment"># Đọc lại giá trị đang áp dụng</span></code></pre>
+  </div>
+  <div class="flag-card">
+    <h4>git config --global user.email</h4>
+    <div class="meaning">Nghĩa: đặt email tác giả commit</div>
+    <pre><code>git config --global user.email "a@example.com"
+git config --get user.email</code></pre>
+    <p>Dùng email mà a muốn gắn với commit. Nếu chỉ muốn áp dụng trong một repo, bỏ <code>--global</code> và chạy lệnh từ thư mục repo đó.</p>
+  </div>
+
+  <h3 id="p1-3">1.3. <code>git init</code> — Tạo project mới từ đầu</h3>
+  <div class="info">
+    <strong>PHẦN QUAN TRỌNG NHẤT KHI BẮT ĐẦU</strong><br>
+    Khi có thư mục code chưa được quản lý bởi Git, chạy <code>git init</code> tại thư mục đó. Nếu project đã clone từ GitHub hoặc đã có thư mục <code>.git</code>, thường không cần chạy lại. Chạy nhầm <code>git init</code> trong một thư mục con có thể tạo repository lồng nhau.
+  </div>
+  <div class="flag-card">
+    <h4>git init</h4>
+    <div class="meaning">Nghĩa: <strong>Khởi tạo</strong> — Tạo Git repo mới trong folder hiện tại</div>
+    <pre><code>git init</code></pre>
+  </div>
+
+  <h3>1.4. <code>git clone</code> — Lấy project có sẵn</h3>
+  <div class="flag-card">
+    <h4>git clone</h4>
+    <div class="meaning">Nghĩa: <strong>Sao chép</strong> — Tải repo từ GitHub về máy</div>
+    <pre><code>git clone https://github.com/user/repo.git</code></pre>
+  </div>
+
+  <!-- LỆNH NÂNG CAO: ORPHAN -->
+  <h3 id="p1-5" style="color: #d73a49;">1.5. <code>git checkout --orphan</code> — Tạo nhánh có lịch sử độc lập</h3>
+  <div class="warning">
+    <strong>Đây không phải cách thông thường để làm lại một project.</strong><br>
+    <code>--orphan</code> tạo nhánh mới không có commit cha; commit đầu tiên trên nhánh đó sẽ mở đầu một lịch sử Git độc lập. Tuy nhiên, ngay sau lệnh, index và working tree ban đầu vẫn được điền theo commit hiện tại. Chỉ khi muốn tạo cây file hoàn toàn khác mới cần dọn chúng. Cách này thường dùng cho mục đích đặc biệt, chẳng hạn xuất bản một cây file mà không mang theo lịch sử cũ.
+  </div>
+  <div class="flag-card">
+    <h4>git switch --orphan &lt;tên_nhánh&gt; (hoặc git checkout --orphan)</h4>
+    <div class="meaning">Nghĩa: tạo nhánh mới không kế thừa lịch sử commit</div>
+    <pre><code><span class="comment"># Xem trạng thái và sao lưu/commit các thay đổi cần giữ trước.</span>
+git status
+
+<span class="comment"># Tạo nhánh có lịch sử độc lập; file hiện tại có thể vẫn xuất hiện.</span>
+git switch --orphan history-moi
+
+<span class="comment"># CHỈ dùng nếu muốn dọn các file đang được Git theo dõi khỏi index và working tree.</span>
+<span class="comment"># Lệnh này có tính phá hủy; kiểm tra kỹ trước khi chạy.</span>
+git rm -rf .
+
+<span class="comment"># Thêm các file mới cần lưu trên lịch sử độc lập.</span>
+git add .
+git status
+git commit -m "Start independent history"</code></pre>
+    <p><strong>Giải thích flag:</strong></p>
+    <table>
+      <tr><th>Cú pháp</th><th>Nghĩa</th></tr>
+      <tr><td><code>--orphan &lt;branch&gt;</code></td><td>Tạo nhánh chưa có commit cha; commit đầu tiên tạo lịch sử độc lập.</td></tr>
+      <tr><td><code>git rm -rf .</code></td><td><code>-r</code>: xử lý thư mục đệ quy; <code>-f</code>: ép xóa các đường dẫn được Git quản lý. Lệnh không phải công cụ để xóa mọi file untracked/ignored trong thư mục.</td></tr>
+    </table>
+    <p><strong>Không chạy ví dụ này trong project đang làm nếu a chưa sao lưu hoặc chưa hiểu chính xác file nào sẽ bị xóa.</strong> Nếu mục tiêu chỉ là bắt đầu tính năng mới, hãy dùng <code>git switch -c feature/ten-tinh-nang</code>.</p>
+  </div>
+
+  <hr>
+
+  <!-- ========== PHẦN 2 ========== -->
+  <h2 id="p2">2. 4 tầng của Git</h2>
+  <div class="flow" style="text-align: center; font-family: monospace; padding: 20px; background: #f6f8fa; border-radius: 8px; margin: 20px 0; border: 1px solid #e1e4e8; line-height: 1.8;">
+    <strong>Working Directory</strong> (File a đang sửa; có thể có file mới chưa theo dõi)<br>
+    <span style="color:#d73a49;">▼ git add &lt;file&gt; / git add -A</span><br>
+    <strong>Staging Area / Index</strong> (Snapshot những thay đổi chuẩn bị commit)<br>
+    <span style="color:#d73a49;">▼ git commit</span><br>
+    <strong>Local Repository</strong> (Lịch sử commit trên máy)<br>
+    <span style="color:#d73a49;">▼ git push</span><br>
+    <strong>Remote Repository</strong> (Ví dụ GitHub/GitLab; nơi chia sẻ lịch sử)
+  </div>
+
+  <!-- ========== PHẦN 3 ========== -->
+  <h2 id="p3">3. Kiểm tra trạng thái</h2>
+  <div class="flag-card">
+    <h4>git status</h4>
+    <div class="meaning">Nghĩa: <strong>Trạng thái</strong> — Xem file đã sửa, file mới, file đã stage</div>
+    <pre><code>git status
+ git status -sb <span class="comment"># Dạng ngắn: branch + trạng thái file</span></code></pre>
+  </div>
+  <div class="flag-card">
+    <h4>git diff</h4>
+    <div class="meaning">Nghĩa: xem khác biệt giữa các trạng thái file</div>
+    <pre><code>git diff                 <span class="comment"># Thay đổi chưa stage so với index</span>
+git diff --staged        <span class="comment"># Thay đổi đã stage so với commit hiện tại</span>
+git diff HEAD            <span class="comment"># Tổng thay đổi tracked so với HEAD</span>
+git diff -- file.txt     <span class="comment"># Chỉ xem một file</span></code></pre>
+  </div>
+
+  <!-- ========== PHẦN 4 ========== -->
+  <h2 id="p4">4. Add &amp; Commit</h2>
+  <div class="flag-card">
+    <h4>git add</h4>
+    <div class="meaning">Nghĩa: <strong>Thêm</strong> — Đưa file vào Staging Area</div>
+    <pre><code>git add file.txt       <span class="comment"># Stage một file</span>
+git add .              <span class="comment"># Stage thay đổi dưới thư mục hiện tại</span>
+git add -A             <span class="comment"># Stage mọi thay đổi trong working tree (thêm/sửa/xóa)</span>
+git add -p             <span class="comment"># Chọn từng phần thay đổi để stage</span></code></pre>
+    <p>Trước khi commit, kiểm tra nội dung đã stage bằng <code>git diff --staged</code>. <code>git add</code> không lưu lịch sử; nó chỉ chuẩn bị nội dung cho commit.</p>
+  </div>
+  <div class="flag-card">
+    <h4>git commit</h4>
+    <div class="meaning">Nghĩa: <strong>Ghi lại</strong> — Lưu thay đổi thành 1 commit</div>
+    <pre><code>git commit -m "Nội dung commit" <span class="comment"># Commit với message</span>
+git commit --amend <span class="comment"># Sửa commit cuối; có thể thay đổi hash</span></code></pre>
+    <p>Nếu bỏ <code>-m</code>, Git mở editor được cấu hình trên máy (không nhất thiết là Vim). Chỉ dùng <code>--amend</code> với commit đã chia sẻ khi a hiểu tác động của việc viết lại lịch sử.</p>
+  </div>
+
+  <!-- ========== PHẦN 5 ========== -->
+  <h2 id="p5">5. Xem lịch sử</h2>
+  <div class="flag-card">
+    <h4>git log</h4>
+    <div class="meaning">Nghĩa: <strong>Nhật ký</strong> — Xem lịch sử commit</div>
+    <pre><code>git log --oneline --graph --all</code></pre>
+  </div>
+
+  <!-- ========== PHẦN 6 ========== -->
+  <h2 id="p6">6. Branch</h2>
+  <div class="flag-card">
+    <h4>git branch &amp; git switch</h4>
+    <div class="meaning">Nghĩa: <strong>Nhánh</strong> — Quản lý nhánh</div>
+    <pre><code>git branch                    <span class="comment"># Liệt kê branch local</span>
+git branch -a                 <span class="comment"># Local + remote-tracking branches</span>
+git branch -vv                <span class="comment"># Xem upstream và trạng thái ahead/behind</span>
+git switch -c feature/ten-tinh-nang  <span class="comment"># Tạo branch và chuyển sang đó</span>
+git switch main               <span class="comment"># Chuyển sang branch main</span>
+git branch -d feature/ten     <span class="comment"># Xóa branch local đã merge</span>
+git push origin --delete feature/ten <span class="comment"># Xóa branch trên remote</span></code></pre>
+    <p><code>git branch -d</code> thường từ chối xóa branch chưa merge. <code>-D</code> ép xóa; chỉ dùng khi đã chắc chắn không cần các commit riêng trên branch đó.</p>
+  </div>
+
+  <!-- ========== PHẦN 7 ========== -->
+  <h2 id="p7">7. Merge &amp; Conflict</h2>
+  <div class="flag-card">
+    <h4>git merge</h4>
+    <div class="meaning">Nghĩa: <strong>Hợp nhất</strong> — Gộp branch vào branch hiện tại</div>
+    <pre><code>git switch main
+ git pull --ff-only origin main <span class="comment"># Cập nhật main nếu có thể fast-forward</span>
+ git merge feature/ten-tinh-nang <span class="comment"># Gộp feature vào branch hiện tại (main)</span>
+ git status</code></pre>
+    <p>Nếu merge conflict, Git sẽ báo những file cần xử lý. Không chạy tiếp các lệnh khác một cách đoán mò; xem mục <a href="#p27">Xử lý merge conflict</a>.</p>
+  </div>
+
+  <p>Quy trình xử lý conflict chi tiết nằm ở <a href="#p27">mục 27</a>.</p>
+
+
+  <!-- ========== PHẦN 8 ========== -->
+  <h2 id="p8">8. Push, Pull, Fetch</h2>
+  <div class="flag-card">
+    <h4>git push / pull / fetch</h4>
+    <div class="meaning">Nghĩa: <strong>Đẩy / Kéo / Lấy</strong></div>
+    <pre><code>git fetch origin                 <span class="comment"># Tải thông tin/commit mới; chưa tích hợp vào branch hiện tại</span>
+git pull --ff-only               <span class="comment"># Fetch rồi tích hợp nếu chỉ cần fast-forward</span>
+git push origin main             <span class="comment"># Đẩy branch local main lên branch main trên origin</span>
+git push -u origin ten-branch    <span class="comment"># Push lần đầu và đặt upstream</span></code></pre>
+    <p><strong>Phân biệt:</strong> <code>fetch</code> cập nhật dữ liệu remote-tracking; <code>pull</code> là fetch rồi tích hợp vào branch hiện tại (thường merge hoặc rebase tùy cấu hình/cờ); <code>push</code> gửi các ref/commit local lên remote. Trước khi pull, kiểm tra và commit/stash thay đổi local nếu cần.</p>
+  </div>
+
+  <!-- ========== PHẦN 9 ========== -->
+  <h2 id="p9">9. Upstream &amp; Push branch mới</h2>
+  <div class="flag-card">
+    <h4>-u (--set-upstream)</h4>
+    <div class="meaning">Nghĩa: đặt upstream/tracking branch cho branch local</div>
+    <pre><code>git push -u origin taomoi
+<span class="comment"># Sau này, khi đang ở taomoi, thường chỉ cần:</span>
+git push
+git pull</code></pre>
+    <p>Upstream là branch remote mà branch local theo dõi (ví dụ local <code>taomoi</code> theo dõi <code>origin/taomoi</code>). Nó giúp Git biết mặc định sẽ pull/push với nhánh nào.</p>
+  </div>
+
+  <!-- ========== PHẦN 10 ========== -->
+  <h2 id="p10">10. Hoàn tác</h2>
+  <div class="flag-card">
+    <h4>git restore / reset / revert</h4>
+    <div class="meaning">Nghĩa: <strong>Khôi phục / Đặt lại / Đảo ngược</strong></div>
+    <pre><code>git restore file.txt              <span class="comment"># Bỏ thay đổi CHƯA stage của file; có thể mất phần sửa đó</span>
+git restore --staged file.txt     <span class="comment"># Bỏ stage, vẫn giữ sửa đổi trong working tree</span>
+git reset --soft HEAD~1           <span class="comment"># Bỏ commit cuối khỏi branch; thay đổi vẫn staged</span>
+git reset --mixed HEAD~1          <span class="comment"># Mặc định: bỏ commit khỏi branch; thay đổi còn ở working tree, unstaged</span>
+git reset --hard HEAD~1           <span class="comment"># Di chuyển HEAD/branch và làm sạch index + tracked working tree; nguy hiểm</span>
+git revert &lt;hash&gt;                 <span class="comment"># Tạo commit mới đảo ngược thay đổi của commit đã chọn</span></code></pre>
+    <div class="warning"><strong>Cảnh báo:</strong> <code>reset --hard</code> có thể xóa thay đổi tracked chưa commit. <code>restore</code> cũng có thể loại bỏ phần sửa của file. Hãy chạy <code>git status</code> và sao lưu/stash trước khi hoàn tác. Với commit đã push/chia sẻ, thường ưu tiên <code>git revert</code> để không viết lại lịch sử chung.</div>
+  </div>
+
+  <!-- ========== PHẦN 11 ========== -->
+  <h2 id="p11">11. Stash</h2>
+  <div class="flag-card">
+    <h4>git stash</h4>
+    <div class="meaning">Nghĩa: <strong>Cất tạm</strong> — Cất thay đổi chưa commit đi chỗ khác</div>
+    <pre><code>git stash push -m "tam-cat-cong-viec" <span class="comment"># Cất thay đổi tracked, kèm ghi chú</span>
+git stash push -u -m "them-file-moi"  <span class="comment"># Thêm cả file untracked</span>
+git stash list                         <span class="comment"># Xem các stash</span>
+git stash show -p stash@{0}            <span class="comment"># Xem diff của stash mới nhất</span>
+git stash apply stash@{0}              <span class="comment"># Áp dụng lại nhưng giữ stash</span>
+git stash pop                          <span class="comment"># Áp dụng rồi xóa stash nếu áp dụng thành công</span></code></pre>
+    <p>Mặc định, <code>git stash</code> không cất file untracked. Dùng <code>-u</code> nếu muốn cất cả file mới chưa được Git theo dõi. Nếu áp dụng stash bị conflict, stash thường vẫn được giữ lại để xử lý.</p>
+  </div>
+
+  <!-- ========== PHẦN 12 ========== -->
+  <h2 id="p12">12. Remote</h2>
+  <div class="flag-card">
+    <h4>git remote</h4>
+    <div class="meaning">Nghĩa: <strong>Từ xa</strong> — Quản lý kết nối GitHub</div>
+    <pre><code>git remote -v                         <span class="comment"># Xem URL fetch/push</span>
+git remote add origin &lt;URL&gt;           <span class="comment"># Thêm remote tên origin</span>
+git remote set-url origin &lt;URL-moi&gt;   <span class="comment"># Đổi URL remote</span>
+git fetch origin                      <span class="comment"># Cập nhật dữ liệu từ remote</span></code></pre>
+    <p><code>origin</code> chỉ là tên thường dùng cho remote mặc định; có thể đặt tên khác. Remote là địa chỉ kho Git từ xa, không nhất thiết phải là GitHub.</p>
+  </div>
+
+  <!-- ========== PHẦN 13 ========== -->
+  <h2 id="p13">13. .gitignore</h2>
+  <p>File <code>.gitignore</code> quy định những file chưa được theo dõi mà Git nên bỏ qua, ví dụ thư mục dependency, file build hoặc secret local.</p>
+  <pre><code>node_modules/
+dist/
+.env
+*.log
+.next/</code></pre>
+  <div class="warning"><strong>Lưu ý quan trọng:</strong> nếu file đã được track/commit từ trước, thêm nó vào <code>.gitignore</code> không tự bỏ file khỏi Git. Để ngừng track nhưng vẫn giữ file trên máy, dùng <code>git rm --cached &lt;file&gt;</code> hoặc với thư mục dùng <code>git rm -r --cached &lt;folder&gt;</code>, sau đó commit thay đổi. Đừng commit API key, mật khẩu hoặc token.</div>
+
+  <!-- ========== PHẦN 14 ========== -->
+  <h2 id="p14">14. Tag</h2>
+  <div class="flag-card">
+    <h4>git tag</h4>
+    <div class="meaning">Nghĩa: <strong>Thẻ</strong> — Đánh dấu phiên bản (VD: v1.0.0)</div>
+    <pre><code>git tag -a v1.0.0 -m "Release 1.0.0"  <span class="comment"># Tạo annotated tag</span>
+git tag                                  <span class="comment"># Liệt kê tag local</span>
+git show v1.0.0                          <span class="comment"># Xem thông tin tag</span>
+git push origin v1.0.0                   <span class="comment"># Đẩy một tag lên remote</span>
+git push origin --tags                   <span class="comment"># Đẩy tất cả tag local</span></code></pre>
+  </div>
+
+  <!-- ========== PHẦN 15 ========== -->
+  <h2 id="p15">15. Workflow hàng ngày</h2>
+  <div class="info">Ví dụ khi làm việc trên branch <code>main</code>. Trong team, nên phát triển trên feature branch và tạo Pull Request theo quy trình của nhóm.</div>
+  <pre><code>git status                         <span class="comment"># Kiểm tra trước khi làm</span>
+git switch main
+git pull --ff-only origin main      <span class="comment"># Lấy cập nhật an toàn nếu có thể fast-forward</span>
+git switch -c feature/ten-tinh-nang
+<span class="comment"># Sửa code...</span>
+git status
+git diff                            <span class="comment"># Kiểm tra thay đổi chưa stage</span>
+git add -A
+git diff --staged                   <span class="comment"># Kiểm tra những gì sắp commit</span>
+git commit -m "Add feature"
+git push -u origin feature/ten-tinh-nang</code></pre>
+  <p>Nếu <code>git pull --ff-only</code> bị từ chối vì lịch sử đã phân nhánh, đừng vội dùng reset/force; xem <code>git status</code>, <code>git log</code> và quy trình merge/rebase của project.</p>
+
+  <!-- ========== PHẦN 16 ========== -->
+  <h2 id="p16">16. Lệnh nâng cao</h2>
+  <div class="flag-card">
+    <h4>git rebase / cherry-pick / reflog</h4>
+    <pre><code>git fetch origin
+git rebase origin/main          <span class="comment"># Đưa commit của branch hiện tại lên trên origin/main</span>
+git cherry-pick &lt;hash&gt;           <span class="comment"># Áp dụng một commit cụ thể lên branch hiện tại</span>
+git reflog                      <span class="comment"># Xem lịch sử di chuyển HEAD/ref trên máy</span>
+git push --force-with-lease     <span class="comment"># Chỉ cân nhắc sau khi đã rewrite history và hiểu tác động</span></code></pre>
+    <div class="warning"><strong>Rebase và force push:</strong> không rebase/force-push branch dùng chung của nhóm nếu chưa thống nhất. <code>--force-with-lease</code> có kiểm tra remote tip tốt hơn <code>--force</code>, nhưng vẫn có thể thay đổi lịch sử remote.</div>
+  </div>
+
+  <!-- ========== PHẦN 17 ========== -->
+  <h2 id="p17">17. HEAD, ^, ~, Hash</h2>
+  <table>
+    <tr><th>Cú pháp</th><th>Nghĩa</th></tr>
+    <tr><td><code>HEAD</code></td><td>Commit hiện tại</td></tr>
+    <tr><td><code>HEAD~1</code></td><td>Commit cha thứ nhất của HEAD (lùi 1 thế hệ theo first-parent)</td></tr>
+    <tr><td><code>HEAD~3</code></td><td>Lùi 3 lần theo chuỗi cha thứ nhất</td></tr>
+    <tr><td><code>HEAD^</code> / <code>HEAD^1</code></td><td>Cha thứ nhất của HEAD</td></tr>
+    <tr><td><code>HEAD^2</code></td><td>Cha thứ hai (chỉ có với commit có từ 2 parent, thường là merge commit)</td></tr>
+    <tr><td><code>a1b2c3d</code></td><td>Ví dụ hash rút gọn của commit; hash thật lấy từ <code>git log --oneline</code></td></tr>
+  </table>
+
+  <!-- ========== PHẦN 18 ========== -->
+  <h2 id="p18">18. Flag thường gặp — Ý nghĩa phụ thuộc vào lệnh</h2>
+  <div class="warning"><strong>Không có bảng dịch flag nào đúng cho mọi lệnh Git.</strong> Cùng một chữ viết tắt có thể có ý nghĩa khác nhau ở lệnh khác nhau. Luôn đọc flag cùng với tên lệnh.</div>
+  <table>
+    <tr><th>Flag</th><th>Ví dụ</th><th>Ý nghĩa trong ngữ cảnh đó</th></tr>
+    <tr><td><code>-m</code></td><td><code>git commit -m "msg"</code></td><td><code>--message</code>: cung cấp commit message. Nhưng trong <code>git branch -m</code>, <code>-m</code> là đổi tên branch.</td></tr>
+    <tr><td><code>-a</code></td><td><code>git branch -a</code></td><td>Ở lệnh branch: hiển thị branch local và remote-tracking. Với <code>git add -A</code>, chữ dùng là <code>-A</code>, nghĩa là stage mọi thay đổi.</td></tr>
+    <tr><td><code>-b</code></td><td><code>git checkout -b feature</code></td><td>Tạo branch rồi chuyển sang branch đó. Với lệnh mới, thường dùng <code>git switch -c feature</code>.</td></tr>
+    <tr><td><code>-u</code></td><td><code>git push -u origin feature</code></td><td>Ở lệnh push: <code>--set-upstream</code>, đặt branch remote theo dõi. Trong lệnh khác, <code>-u</code> có thể mang nghĩa khác.</td></tr>
+    <tr><td><code>--staged</code></td><td><code>git diff --staged</code></td><td>Xem thay đổi đang nằm trong Staging Area.</td></tr>
+    <tr><td><code>--oneline</code></td><td><code>git log --oneline</code></td><td>Rút gọn mỗi commit thành một dòng.</td></tr>
+    <tr><td><code>--graph</code></td><td><code>git log --graph</code></td><td>Hiển thị nhánh lịch sử bằng đồ họa ký tự.</td></tr>
+    <tr><td><code>--all</code></td><td><code>git log --all</code></td><td>Hiển thị commit reachable từ mọi ref mà log xét, không chỉ HEAD hiện tại.</td></tr>
+    <tr><td><code>--force-with-lease</code></td><td><code>git push --force-with-lease</code></td><td>Force-update có điều kiện dựa trên remote-tracking expectation; vẫn có rủi ro viết lại lịch sử.</td></tr>
+  </table>
+
+  <hr>
+
+  <!-- ========== PHẦN 19 ========== -->
+  <h2 id="p19">19. Lệnh cũ vs Lệnh mới</h2>
+  <table>
+    <tr><th>Mục đích</th><th>Cũ</th><th>Mới</th></tr>
+    <tr><td>Chuyển branch</td><td><code>git checkout main</code></td><td><code>git switch main</code></td></tr>
+    <tr><td>Tạo + chuyển</td><td><code>git checkout -b feature</code></td><td><code>git switch -c feature</code></td></tr>
+    <tr><td>Khôi phục file</td><td><code>git checkout -- file</code></td><td><code>git restore file</code></td></tr>
+  </table>
+
+  <!-- ========== PHẦN 20 ========== -->
+  <h2 id="p20">20. Lấy lại branch đã xóa</h2>
+  <pre><code>git reflog
+git switch -c ten_nhanh &lt;hash_commit&gt;</code></pre>
+
+  <!-- ========== PHẦN 21 ========== -->
+  <h2 id="p21">21. Lệnh SAI thường gặp</h2>
+  <table>
+    <tr><th>SAI</th><th>Vấn đề</th><th>ĐÚNG</th></tr>
+    <tr><td><code>git branch checkout main</code></td><td>Tạo branch local tên <code>checkout</code> tại điểm bắt đầu <code>main</code>; không chuyển branch hiện tại.</td><td><code>git switch main</code> nếu muốn chuyển sang main.</td></tr>
+    <tr><td><code>git commit</code> (không có <code>-m</code>)</td><td>Mở editor được Git cấu hình; không nhất thiết là Vim.</td><td><code>git commit -m "msg"</code> để truyền message trực tiếp.</td></tr>
+    <tr><td><code>git pull</code> khi còn sửa đổi dở</td><td>Có thể bị chặn hoặc gây conflict nếu cập nhật chồng lên thay đổi local.</td><td>Kiểm tra <code>git status</code>; commit hoặc stash trước nếu cần.</td></tr>
+    <tr><td>Thêm file đã tracked vào <code>.gitignore</code></td><td>Git vẫn theo dõi file đó.</td><td>Dùng <code>git rm --cached &lt;file&gt;</code> rồi commit nếu muốn bỏ tracking.</td></tr>
+  </table>
+
+  <!-- ========== PHẦN 22 ========== -->
+  <h2 id="p22">22. Thoát Vim &amp; Pager</h2>
+  <table>
+    <tr><th>Phím</th><th>Tác dụng</th></tr>
+    <tr><td><code>Esc</code> → <code>:wq</code> + Enter</td><td>Lưu và thoát Vim</td></tr>
+    <tr><td><code>q</code></td><td>Thoát pager (khi xem log bị kẹt)</td></tr>
+  </table>
+
+  <!-- ========== PHẦN 23 ========== -->
+  <h2 id="p23">23. VS Code Integration</h2>
+  <p>Nhấn <code>Ctrl + Shift + G</code> để mở bảng Git trong VS Code.</p>
+
+  <!-- ========== PHẦN 24 ========== -->
+  <h2 id="p24">24. Lỗi thường gặp</h2>
+  <table>
+    <tr><th>Lỗi / tình huống</th><th>Cách kiểm tra và hướng xử lý</th></tr>
+    <tr><td><code>not a git repository</code></td><td>Kiểm tra mình có đang ở đúng thư mục repo không (PowerShell: <code>Get-Location</code>). Chỉ chạy <code>git init</code> nếu đây thực sự là project mới chưa có repository; nếu không, có thể cần <code>cd</code> vào đúng thư mục hoặc clone repo.</td></tr>
+    <tr><td><code>no upstream branch</code></td><td>Kiểm tra remote bằng <code>git remote -v</code>, rồi dùng <code>git push -u origin &lt;branch-hiện-tại&gt;</code> để push và thiết lập upstream.</td></tr>
+    <tr><td><code>rejected (non-fast-forward)</code></td><td>Remote có commit mà branch local chưa tích hợp. Chạy <code>git fetch</code>, xem log, rồi merge/rebase theo quy trình. Không vội dùng force push.</td></tr>
+    <tr><td><code>unmerged files</code></td><td>Đang có conflict. Xem <code>git status</code>, sửa từng file, stage file đã giải quyết, rồi tiếp tục merge/rebase đúng quy trình.</td></tr>
+    <tr><td><code>nothing to commit</code></td><td>Không có thay đổi staged. Kiểm tra <code>git status</code>, <code>git diff</code> và <code>git diff --staged</code>.</td></tr>
+  </table>
+
+  <!-- ========== PHẦN 25 ========== -->
+  <h2 id="p25">25. Bảng tra cứu nhanh</h2>
+  <table>
+    <tr><th>Việc</th><th>Lệnh</th></tr>
+    <tr><td>Tạo repo mới</td><td><code>git init</code></td></tr>
+    <tr><td>Tạo nhánh có lịch sử độc lập</td><td><code>git switch --orphan &lt;tên&gt;</code></td></tr>
+    <tr><td>Xem trạng thái đầy đủ</td><td><code>git status</code></td></tr>
+    <tr><td>Xem trạng thái dạng ngắn</td><td><code>git status -sb</code></td></tr>
+    <tr><td>Xem sửa đổi chưa stage</td><td><code>git diff</code></td></tr>
+    <tr><td>Xem thay đổi đã stage</td><td><code>git diff --staged</code></td></tr>
+    <tr><td>Tạo branch mới</td><td><code>git switch -c feature/name</code></td></tr>
+    <tr><td>Commit</td><td><code>git commit -m "msg"</code></td></tr>
+    <tr><td>Push branch lần đầu</td><td><code>git push -u origin &lt;branch&gt;</code></td></tr>
+    <tr><td>Xem lịch sử rút gọn</td><td><code>git log --oneline --graph --decorate --all</code></td></tr>
+  </table>
+
+  <!-- ========== PHẦN 26 ========== -->
+  <h2 id="p26">26. 5 quy tắc vàng</h2>
+  <div class="success">
+    <ol>
+      <li><strong><code>git status</code></strong> trước mọi thao tác quan trọng.</li>
+      <li><strong><code>git diff</code> và <code>git diff --staged</code></strong> để kiểm tra đúng phần thay đổi.</li>
+      <li><strong>Commit nhỏ</strong>, message nói rõ mục đích thay đổi.</li>
+      <li><strong>Fetch rồi tích hợp theo workflow của nhóm</strong> trước khi push; không pull mù quáng khi working tree đang có thay đổi.</li>
+      <li><strong>Không dùng <code>reset --hard</code>, <code>clean -fd</code> hay force push</strong> nếu chưa hiểu tác động.</li>
+    </ol>
+  </div>
+
+  <!-- ========== PHẦN 27 ========== -->
+  <h2 id="p27">27. Quy trình xử lý merge conflict</h2>
+  <p>Conflict xảy ra khi Git không thể tự kết hợp các thay đổi, ví dụ hai nhánh sửa cùng vùng của một file. Conflict không có nghĩa Git đã làm hỏng project; nó cần a quyết định nội dung cuối cùng.</p>
+  <pre><code>git status                       <span class="comment"># Xem file đang conflict</span>
+<span class="comment"># Mở file; xử lý các marker &lt;&lt;&lt;&lt;&lt;&lt;&lt;, =======, &gt;&gt;&gt;&gt;&gt;&gt;&gt; trong editor</span>
+git diff                         <span class="comment"># Xem phần thay đổi</span>
+git add &lt;file-da-giai-quyet&gt;     <span class="comment"># Đánh dấu file conflict đã được giải quyết</span>
+git status
+git merge --continue             <span class="comment"># Tiếp tục merge nếu Git yêu cầu</span>
+<span class="comment"># Hoặc: git merge --abort để hủy merge chưa hoàn tất</span></code></pre>
+  <div class="note">Nếu đang rebase thay vì merge, dùng <code>git rebase --continue</code> hoặc <code>git rebase --abort</code>. Hãy biết mình đang trong quy trình nào trước khi chạy lệnh tiếp theo.</div>
+
+  <!-- ========== PHẦN 28 ========== -->
+  <h2 id="p28">28. Lệnh an toàn và lệnh nguy hiểm</h2>
+  <table>
+    <tr><th>Lệnh</th><th>Tác động</th><th>Cách dùng an toàn hơn</th></tr>
+    <tr><td><code>git reset --hard</code></td><td>Đặt lại HEAD/index/working tree; có thể loại bỏ thay đổi tracked chưa commit.</td><td>Chạy <code>git status</code>, tạo backup/commit hoặc stash trước.</td></tr>
+    <tr><td><code>git clean -fd</code></td><td>Xóa file/thư mục untracked; không có Undo của Git cho file đó.</td><td>Chạy <code>git clean -nd</code> để xem trước danh sách sẽ xóa.</td></tr>
+    <tr><td><code>git rm -rf .</code></td><td>Gỡ các đường dẫn được Git theo dõi khỏi index và working tree.</td><td>Chỉ dùng trong workflow có chủ đích như tạo nhánh orphan mới, sau khi hiểu tác động.</td></tr>
+    <tr><td><code>git push --force</code></td><td>Có thể ghi đè lịch sử branch trên remote, ảnh hưởng người khác.</td><td>Tránh trên branch dùng chung; nếu bắt buộc viết lại lịch sử, hiểu rõ quy trình và cân nhắc <code>--force-with-lease</code>.</td></tr>
+    <tr><td><code>git restore &lt;file&gt;</code></td><td>Bỏ thay đổi chưa stage của file.</td><td>Xem <code>git diff -- &lt;file&gt;</code> và sao lưu phần cần giữ trước.</td></tr>
+  </table>
+
+  <!-- ========== PHẦN 29 ========== -->
+  <h2 id="p29">29. Tài liệu chính thức</h2>
+  <ul>
+    <li><a href="https://git-scm.com/docs" target="_blank" rel="noopener noreferrer">Git Reference Manual</a> — tra cứu cú pháp và mọi option.</li>
+    <li><a href="https://git-scm.com/book/en/v2" target="_blank" rel="noopener noreferrer">Pro Git Book</a> — học mô hình và workflow Git.</li>
+    <li><a href="https://git-scm.com/docs/git-checkout" target="_blank" rel="noopener noreferrer">git checkout / --orphan</a> — đọc kỹ nếu cần tạo nhánh có lịch sử độc lập.</li>
+    <li><a href="https://git-scm.com/docs/git-reset" target="_blank" rel="noopener noreferrer">git reset</a> và <a href="https://git-scm.com/docs/git-revert" target="_blank" rel="noopener noreferrer">git revert</a> — phân biệt các cách hoàn tác.</li>
+    <li><a href="https://git-scm.com/docs/git-stash" target="_blank" rel="noopener noreferrer">git stash</a> — các tùy chọn lưu thay đổi tạm thời.</li>
+  </ul>
+
+  <div class="footer">
+    Tài liệu học tập Git · Bản rà soát và bổ sung 2026<br>
+    Nguồn cú pháp: tài liệu chính thức trên git-scm.com · Kiểm tra <code>git status</code> trước các thao tác quan trọng
+  </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,6 @@
+/* app/globals.css */
+/* File này được dùng để reset các CSS mặc định của trình duyệt */
+body {
+  margin: 0;
+  padding: 0;
+}

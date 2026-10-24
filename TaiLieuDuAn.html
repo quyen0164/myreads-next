@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài liệu Đặc tả Dự án - MyReads</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --text-color: #1e293b;
+            --bg-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --code-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        h1, h2, h3 {
+            color: #0f172a;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: none;
+            color: var(--primary-color);
+            font-size: 32px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 50px;
+        }
+
+        h3 {
+            font-size: 18px;
+            border-bottom: 1px dashed var(--border-color);
+            margin-top: 30px;
+        }
+
+        p, li {
+            font-size: 15px;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            color: #db2777;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--code-bg);
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* CSS cho các sơ đồ Mermaid */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Tài liệu Đặc tả Kỹ thuật & Phân tích Dự án</h1>
+    <p style="text-align: center; color: #64748b; font-style: italic;">Dự án: MyReads - Hệ thống quản lý thư viện cá nhân</p>
+
+    <!-- PHẦN 1 -->
+    <h2>PHẦN 1: PHÂN TÍCH DỰ ÁN (TECHNICAL ANALYSIS)</h2>
+    
+    <h3>1. Kiến trúc hệ thống (System Architecture)</h3>
+    <ul>
+        <li><strong>Mô hình:</strong> Monolithic Architecture (Nguyên khối) sử dụng Next.js App Router.</li>
+        <li><strong>Rendering Model:</strong> Kết hợp <strong>RSC (React Server Components)</strong> cho phần hiển thị dữ liệu tĩnh và <strong>CSR (Client Components)</strong> cho các phần tương tác (Form, Modal, Autocomplete).</li>
+        <li><strong>Data Fetching & Mutation:</strong> Sử dụng <strong>Next.js Server Actions</strong> (RPC-style) thay vì RESTful API truyền thống. Giúp giảm thiểu boilerplate code.</li>
+        <li><strong>Database:</strong> SQLite (thông qua thư viện <code>better-sqlite3</code> chạy đồng bộ).</li>
+        <li><strong>Authentication:</strong> Sử dụng <strong>Cookie-based Session</strong>. Lưu trữ JSON (id, role) trong cookie <code>httpOnly</code> để chống tấn công XSS.</li>
+    </ul>
+
+    <h3>2. Cơ chế Bảo mật (Defense in Depth)</h3>
+    <ul>
+        <li><strong>Lớp 1 (Edge/Middleware):</strong> <code>middleware.ts</code> chặn các request không hợp lệ tới <code>/admin</code>.</li>
+        <li><strong>Lớp 2 (Server Component):</strong> <code>AdminGuard</code> xác thực lại quyền <code>ADMIN</code> trước khi render giao diện hoặc gọi DB. Nếu Middleware bị bypass, Guard vẫn bảo vệ trang.</li>
+        <li><strong>Lớp 3 (Server Action):</strong> Các action nhạy cảm gọi <code>getCurrentUserId()</code> để kiểm tra tính hợp lệ của phiên và ràng buộc Khóa ngoại (FK constraint) trước khi ghi vào DB.</li>
+    </ul>
+
+    <!-- PHẦN 2 -->
+    <h2>PHẦN 2: ĐẶC TẢ YÊU CẦU (SOFTWARE REQUIREMENTS SPECIFICATION)</h2>
+    
+    <h3>1. Yêu cầu chức năng (Functional Requirements)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Chức năng</th>
+                <th>Tác nhân</th>
+                <th>Mô tả chi tiết</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>FR-01</strong></td>
+                <td>Đăng nhập / Đăng xuất</td>
+                <td>Tất cả</td>
+                <td>Đăng nhập bằng email (không password). Lưu session vào cookie. Logout xóa cookie và điều hướng về trang chủ.</td>
+            </tr>
+            <tr>
+                <td><strong>FR-02</strong></td>
+                <td>Tìm kiếm sách</td>
+                <td>Tất cả</td>
+                <td>Tìm kiếm theo Tên sách, ISBN, hoặc Tên tác giả. Trạng thái tìm kiếm được lưu trên URL (<code>?q=...</code>).</td>
+            </tr>
+            <tr>
+                <td><strong>FR-03</strong></td>
+                <td>Đổi kệ sách</td>
+                <td>User</td>
+                <td>Gắn sách vào kệ cá nhân: <code>want_to_read</code>, <code>reading</code>, <code>read</code>.</td>
+            </tr>
+            <tr>
+                <td><strong>FR-04</strong></td>
+                <td>Viết / Sửa đánh giá</td>
+                <td>User</td>
+                <td>Đánh giá sách (1-5 sao + bình luận). Nếu đã đánh giá, thao tác sẽ ghi đè (Upsert).</td>
+            </tr>
+            <tr>
+                <td><strong>FR-05</strong></td>
+                <td>Quản lý Sách (CRUD)</td>
+                <td>Admin</td>
+                <td>Thêm, sửa, xóa sách. Xử lý ảnh bìa (URL hoặc Upload + resize Canvas).</td>
+            </tr>
+            <tr>
+                <td><strong>FR-06</strong></td>
+                <td>Quản lý Danh mục (CRUD)</td>
+                <td>Admin</td>
+                <td>Thêm, sửa, xóa Tác giả và Thể loại. Chặn trùng lặp (UNIQUE constraint).</td>
+            </tr>
+            <tr>
+                <td><strong>FR-07</strong></td>
+                <td>Quản lý Người dùng</td>
+                <td>Admin</td>
+                <td>Thêm, sửa role, xóa người dùng.</td>
+            </tr>
+            <tr>
+                <td><strong>FR-08</strong></td>
+                <td>Quản lý Đánh giá</td>
+                <td>Admin</td>
+                <td>Xem, sửa số sao/nội dung, xóa review của bất kỳ ai.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- PHẦN 3 -->
+    <h2>PHẦN 3: SƠ ĐỒ LUỒNG SỰ KIỆN (SEQUENCE DIAGRAMS)</h2>
+
+    <h3>1. Luồng Xác thực & Phân quyền (Auth & Admin Guard Flow)</h3>
+    <div class="mermaid">
+        sequenceDiagram
+            actor User
+            participant Browser
+            participant Middleware
+            participant Page as AdminPage (RSC)
+            participant Guard as AdminGuard (RSC)
+            participant DB as SQLite
+
+            User->>Browser: Truy cập URL /admin
+            Browser->>Middleware: GET /admin
+            
+            Middleware->>Middleware: Đọc Cookie user_session
+            alt Cookie không có HOẶC role != ADMIN
+                Middleware-->>Browser: HTTP 307 Redirect to /login
+                Browser-->>User: Hiển thị trang Đăng nhập
+            else Hợp lệ (role == ADMIN)
+                Middleware->>Page: NextResponse.next()
+                Page->>Browser: Stream khung HTML tĩnh (Suspense fallback)
+                Page->>Guard: Kích hoạt render AdminGuard (Bọc trong Suspense)
+                
+                Guard->>Guard: await cookies() (Xác thực lần 2)
+                alt Lỗi xác thực (đề phòng)
+                    Guard-->>Browser: redirect("/")
+                else Hợp lệ
+                    Guard->>DB: Fetch data (Books, Users, Reviews...)
+                    DB-->>Guard: Trả về Data
+                    Guard-->>Browser: Stream HTML AdminDashboard
+                    Browser-->>User: Hiển thị trang Quản trị
+                end
+            end
+    </div>
+
+    <h3>2. Luồng Tìm kiếm (Search Flow)</h3>
+    <div class="mermaid">
+        sequenceDiagram
+            actor User
+            participant SearchBar as SearchBar (Client)
+            participant Router as Next.js Router
+            participant Page as HomePage (Server)
+            participant DB as SQLite
+
+            User->>SearchBar: Nhập từ khóa "Clean Code" + Enter
+            SearchBar->>Router: router.push('/?q=Clean Code')
+            Router->>Page: Trigger re-render với searchParams
+            Page->>DB: listBooksForUser(userId, searchQuery)
+            Note over DB: Query: SELECT ... WHERE title LIKE '%Clean Code%'
+            DB-->>Page: Trả về mảng Books
+            Page-->>Router: Render kệ "Kết quả tìm kiếm"
+            Router-->>User: Cập nhật UI (Không load lại trang)
+    </div>
+
+    <h3>3. Luồng Tương tác Đánh giá (Review Action Flow)</h3>
+    <div class="mermaid">
+        sequenceDiagram
+            actor User
+            participant Card as BookCard (Client)
+            participant Action as saveReviewAction (Server)
+            participant DB as SQLite
+
+            User->>Card: Nhập 5 Sao, Nội dung, Bấm "Gửi"
+            Card->>Action: Gửi formData (bookId, rating, content)
+            Action->>Action: getCurrentUserId() từ Cookie
+            Action->>DB: Kiểm tra user_id và book_id tồn tại?
+            
+            alt Không tồn tại (Lỗi FK)
+                DB-->>Action: Lỗi
+                Action-->>Card: Throw Error ("Sách không tồn tại")
+                Card-->>User: Hiển thị lỗi
+            else Hợp lệ
+                Action->>DB: UPSERT INTO reviews (ON CONFLICT DO UPDATE)
+                DB-->>Action: Success
+                Action->>Action: revalidatePath("/")
+                Action-->>Card: Trả về Success
+                Card->>Card: Tự động ẩn form, fetch data mới
+                Card-->>User: Hiển thị review mới trong khung cuộn
+            end
+    </div>
+
+    <h3>4. Luồng Xử lý ảnh (Image Upload Flow - Admin)</h3>
+    <div class="mermaid">
+        sequenceDiagram
+            actor Admin
+            participant UI as AdminDashboard
+            participant Canvas as HTML5 Canvas
+            participant Action as createBookAction
+
+            Admin->>UI: Chọn file ảnh bìa
+            UI->>UI: FileReader.readAsDataURL()
+            UI->>Canvas: Vẽ ảnh vào Canvas (300x450)
+            Note over Canvas: Thuật toán Center Crop chống méo
+            Canvas-->>UI: Trả về Base64 (WebP, quality 0.9)
+            UI->>UI: Lưu Base64 vào State (Preview)
+            
+            Admin->>UI: Bấm "Thêm sách"
+            UI->>Action: Gửi formData (kèm chuỗi Base64)
+            Action->>Action: Lưu chuỗi Base64 vào DB (cột thumbnail)
+    </div>
+
+</div>
+
+<!-- Nhúng thư viện Mermaid để vẽ sơ đồ -->
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+        startOnLoad: true,
+        theme: 'default',
+        securityLevel: 'loose'
+    });
+</script>
+
+</body>
+</html>

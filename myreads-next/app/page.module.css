@@ -1,0 +1,148 @@
+.main {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 42px;
+  color: #1e3a8a;
+  margin: 0 0 10px 0;
+}
+
+.formSection {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 40px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.fullWidth {
+  grid-column: span 2;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.input {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+}
+
+.submitBtn {
+  background: #2563eb;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.bookGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.bookCard {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.bookTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.ratingBadge {
+  background: #fef08a;
+  color: #854d0e;
+  padding: 6px 14px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-top: 16px;
+  font-weight: bold;
+}
+
+.actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.actionRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.select {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.btnShelf {
+  background: #0f172a;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.reviewBox {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 10px;
+}
+
+.btnReview {
+  background: #10b981;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  margin-top: 10px;
+}

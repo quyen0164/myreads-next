@@ -1,0 +1,307 @@
+/* ============================================================================
+   FILE: app/styles.css (Giao diện toàn cục và hiệu ứng)
+   ============================================================================ */
+/* [Ý NGHĨA FILE]: Chứa toàn bộ CSS để trang trí giao diện.
+   [TÁC DỤNG]: Biến HTML thô thành giao diện đẹp, có màu sắc, bố cục và hiệu ứng.
+   [CÁCH KHÁC]: Có thể dùng Tailwind CSS (viết class trực tiếp trong HTML). Nhưng dùng file CSS riêng giúp code gọn và dễ tái sử dụng hơn.
+*/
+
+/* ============================================================================
+   PHẦN 1: CẤU HÌNH CHUNG & RESET TRÌNH DUYỆT
+   ============================================================================ */
+.main {
+  /* [TỪ KHÓA: min-height: 100vh] */
+  /* - Ý NGHĨA: Chiều cao tối thiểu bằng 100% chiều cao màn hình (vh = viewport height). */
+  /* - TẠI SAO DÙNG: Để nền xám luôn phủ kín màn hình dù nội dung ngắn hay dài. */
+  min-height: 100vh;
+  
+  /* [TỪ KHÓA: background-color] */
+  /* - Ý NGHĨA: Đặt màu nền. #f8fafc là màu xám rất nhạt, tạo cảm giác sạch sẽ, hiện đại. */
+  background-color: #f8fafc;
+  
+  /* [TỪ KHÓA: padding] */
+  /* - Ý NGHĨA: Khoảng đệm bên trong (trên/dưới 40px, trái/phải 20px). */
+  /* - TẠI SAO DÙNG: Để nội dung không bị dính sát vào mép màn hình. */
+  padding: 40px 20px;
+  
+  /* [TỪ KHÓA: font-family] */
+  /* - Ý NGHĨA: Chọn font chữ. Ta dùng font hệ thống để tải nhanh nhất. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* [TỪ KHÓA: color] */
+  /* - Ý NGHĨA: Màu chữ mặc định (Xám đậm). */
+  color: #1e293b;
+}
+
+.container {
+  /* [TỪ KHÓA: max-width] */
+  /* - Ý NGHĨA: Chiều rộng tối đa là 1200px. */
+  /* - TẠI SAO DÙNG: Trên màn hình 4K, nếu không giới hạn, nội dung sẽ trải dài rất khó đọc. */
+  max-width: 1200px;
+  
+  /* [TỪ KHÓA: margin: 0 auto] */
+  /* - Ý NGHĨA: Căn giữa khối này theo chiều ngang. (0 là trên/dưới, auto là trái/phải). */
+  margin: 0 auto;
+}
+
+.header {
+  /* [TỪ KHÓA: text-align: center] */
+  /* - Ý NGHĨA: Căn giữa văn bản và các phần tử con. */
+  text-align: center;
+  
+  /* [TỪ KHÓA: margin-bottom] */
+  /* - Ý NGHĨA: Khoảng cách từ header đến phần nội dung bên dưới. */
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 42px; /* Kích thước chữ to, nổi bật */
+  font-weight: 800; /* Độ đậm của chữ (800 là siêu đậm) */
+  color: #1e3a8a; /* Màu xanh đen */
+  margin: 0 0 10px 0; /* Xóa margin trên, giữ margin dưới 10px */
+  letter-spacing: -1px; /* Thu hẹp khoảng cách giữa các chữ cái */
+}
+
+.header p {
+  color: #64748b; /* Màu xám */
+  font-size: 18px;
+}
+
+/* ============================================================================
+   PHẦN 2: KHU VỰC KỆ SÁCH (Dàn lưới Grid)
+   ============================================================================ */
+.shelves-container {
+  /* [TỪ KHÓA: display: flex] - Kích hoạt Flexbox (bố cục một chiều). */
+  display: flex;
+  
+  /* [TỪ KHÓA: flex-direction: column] - Các kệ sách xếp chồng lên nhau theo chiều dọc. */
+  flex-direction: column;
+  
+  /* [TỪ KHÓA: gap] - Khoảng cách giữa các kệ sách. */
+  gap: 40px;
+}
+
+.my-shelf {
+  background: white;
+  padding: 25px;
+  border-radius: 16px; /* Bo tròn góc kệ sách */
+  border: 1px solid #e2e8f0; /* Viền xám nhạt */
+  
+  /* [TỪ KHÓA: box-shadow] - Đổ bóng cho khối. */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.my-shelf-title {
+  border-bottom: 2px solid #e2e8f0; /* Đường kẻ dưới tiêu đề */
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+.empty-shelf {
+  color: #94a3b8;
+  font-style: italic; /* In nghiêng */
+}
+
+/* [TỪ KHÓA: CSS GRID - Bố cục 2 chiều] */
+.my-book-grid {
+  display: grid;
+  
+  /* [TỪ KHÓA: repeat(auto-fill, minmax(220px, 1fr))] */
+  /* - Tự động tính số cột. Mỗi thẻ sách rộng tối thiểu 220px. */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 30px; /* Khoảng cách giữa các thẻ sách */
+}
+
+/* ============================================================================
+   PHẦN 3: THẺ SÁCH & HIỆU ỨNG HOVER PHÓNG TO ẢNH
+   ============================================================================ */
+.my-book-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  
+  /* [TỪ KHÓA: position: relative] - Tạo hệ tọa độ cho con bên trong (ảnh phóng to). */
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+/* [TỪ KHÓA: z-index] - Khi hover, thẻ sách nổi lên TRÊN các thẻ bên cạnh. */
+.my-book-card:hover {
+  z-index: 10;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Khung chứa ảnh */
+.my-book-cover {
+  width: 100%;
+  /* [TỪ KHÓA: aspect-ratio: 2 / 3] - Giữ tỷ lệ chuẩn của sách. */
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  position: relative; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Lưu ý: Không dùng overflow: hidden để ảnh có thể phóng to đè lên các thẻ khác. */
+}
+
+/* Ảnh bìa */
+.my-book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ép ảnh vừa khít khung không bị méo */
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* [TỪ KHÓA: :hover img và transform: scale()] - Phóng to ảnh 1.4 lần. */
+.my-book-cover:hover img {
+  transform: scale(1.4); 
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================================
+   PHẦN 4: THÔNG TIN SÁCH VÀ CÁC NÚT BẤM
+   ============================================================================ */
+.my-book-info {
+  display: flex;
+  flex-direction: column;
+  /* [TỪ KHÓA: flex-grow: 1] - Tự giãn, đẩy các nút bấm xuống sát đáy. */
+  flex-grow: 1; 
+}
+
+.my-book-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #0f172a;
+}
+
+.my-book-author {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.my-rating-badge {
+  display: inline-block;
+  background-color: #fef08a;
+  color: #854d0e;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  align-self: flex-start; /* Không cho badge giãn full chiều ngang */
+}
+
+.my-actions {
+  /* [TỪ KHÓA: margin-top: auto] - Đẩy khối này xuống tận cùng đáy. */
+  margin-top: auto; 
+  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Các class form, input, button cơ bản */
+.my-action-row { display: flex; gap: 8px; }
+.my-select { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background-color: #f8fafc; outline: none; }
+.my-btn-shelf { background-color: #0f172a; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.my-btn-shelf:hover { background-color: #334155; }
+.my-review-box { background-color: #f8fafc; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; }
+.my-btn-review { background-color: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.my-btn-review:hover { background-color: #059669; }
+
+/* ============================================================================
+   PHẦN 5: FORM ADMIN
+   ============================================================================ */
+.my-form-section { background: white; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+.my-form-section h2, .my-form-section h3 { margin-top: 0; margin-bottom: 20px; color: #0f172a; }
+.my-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.my-full-width { grid-column: span 2; }
+.my-form-group { display: flex; flex-direction: column; }
+.my-form-group label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+.my-input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
+.my-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+.my-submit-btn { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.my-submit-btn:hover { background-color: #1d4ed8; }
+.my-delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; margin-top: 10px; font-weight: 600; }
+.my-delete-btn:hover { text-decoration: underline; }
+
+/* ============================================================================
+   PHẦN 6: NAVBAR (THANH ĐIỀU HƯỚNG) & RESPONSIVE
+   ============================================================================ */
+
+/* 1. Giao diện Desktop */
+.my-navbar {
+  position: sticky; /* Dính chặt lên trên cùng khi cuộn */
+  top: 0;
+  z-index: 100;
+  background-color: white;
+  padding: 15px 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  
+  /* Dàn hàng ngang */
+  display: flex; 
+  align-items: center; /* Căn giữa theo chiều dọc */
+  justify-content: space-between; /* Đẩy 3 khối ra 3 góc */
+  gap: 20px; 
+}
+
+.my-navbar-logo {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0; /* Ngăn Logo bị bóp méo */
+}
+
+.my-navbar-search {
+  flex: 1; /* Chiếm toàn bộ khoảng trống ở giữa */
+  max-width: 600px; 
+  display: flex;
+  justify-content: center;
+}
+
+/* [CHỮA LỖI "LỢN QUÈ"]: Thêm display flex để các nút nằm ngang */
+.my-navbar-menu {
+  display: flex; 
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0; /* Ngăn Menu bị bóp méo */
+}
+
+/* 2. Giao diện Mobile (Màn hình < 768px) */
+@media (max-width: 768px) {
+  .my-navbar {
+    flex-wrap: wrap; /* Cho phép các phần tử tự động rớt dòng */
+    padding: 10px 15px;
+    gap: 10px;
+  }
+
+  /* Đẩy thanh tìm kiếm xuống dưới cùng (Logo và Menu nằm trên) */
+  .my-navbar-search {
+    order: 3; 
+    width: 100%; 
+    max-width: 100%;
+  }
+
+  .my-navbar-menu {
+    margin-left: auto; /* Đẩy UserMenu sang sát lề phải */
+  }
+
+  /* Thu nhỏ chữ Header để không bị tràn */
+  .header h1 { font-size: 32px; }
+  .header p { font-size: 16px; }
+  
+  /* Giảm lề để có thêm không gian hiển thị */
+  .main { padding: 20px 10px; }
+}

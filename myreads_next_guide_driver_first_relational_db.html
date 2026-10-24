@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Cẩm nang MyReads bằng tiếng Việt: Next.js, React, TypeScript, Prisma 7 và phương án thay thế dùng SQLite driver + SQL trực tiếp để thực hành CRUD.">
+<title>MyReads — Học SQLite Driver + SQL trước, Prisma sau</title>
+<style>/* Layout */
+:root{--blue:#1769aa;--blue2:#0d47a1;--ink:#20252b;--muted:#5d6672;--line:#d9e0e7;--panel:#f5f8fb;--code:#161b22;--green:#247a3e;--red:#b42318;--amber:#8a5700}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fff;color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;display:flex}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.sidebar{position:fixed;left:0;top:0;width:290px;height:100vh;overflow-y:auto;padding:24px 18px;background:#f4f7fa;border-right:1px solid var(--line)}.sidebar h2{font-size:1.05rem;color:var(--blue2);margin:0 0 8px;padding-bottom:12px;border-bottom:2px solid var(--line)}.sidebar p{font-size:.82rem;color:var(--muted);margin:0 0 14px}.sidebar ul{padding:0;margin:0;list-style:none}.sidebar li{margin:3px 0}.sidebar a{display:block;border-radius:6px;padding:6px 9px;font-size:.9rem}.sidebar a:hover{background:#e5edf5;text-decoration:none}.content{width:100%;max-width:1250px;margin-left:290px;padding:38px 52px 70px}.eyebrow{color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:.82rem}h1{font-size:2.2rem;line-height:1.2;margin:.3rem 0 1rem;color:var(--blue2)}h2{font-size:1.55rem;margin:44px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line);scroll-margin-top:20px}h3{font-size:1.13rem;margin:25px 0 8px}p{margin:10px 0}ul,ol{padding-left:24px}li{margin:5px 0}.lead{font-size:1.08rem;color:#414a55}.badge{display:inline-block;background:#e6f2ff;color:#064b89;border-radius:999px;padding:3px 10px;font-size:.82rem;font-weight:700;margin:2px 5px 2px 0}.callout,.warning,.success{padding:14px 17px;margin:18px 0;border-radius:6px;border-left:4px solid}.callout{background:#eef7ff;border-color:#2675be}.warning{background:#fff2ed;border-color:#c2410c}.success{background:#edf9f0;border-color:#278545}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:10px;padding:15px;background:#fff}.card h3{margin:0 0 5px}.code-box{position:relative;margin:12px 0 18px}.code-head{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#252c35;color:#e7edf4;padding:8px 12px;border-radius:8px 8px 0 0;font-size:.86rem}.copy-btn{background:#3b4654;color:#fff;border:1px solid #657181;padding:5px 10px;border-radius:5px;cursor:pointer}.copy-btn:hover{background:#536174}pre{margin:0;padding:17px;background:var(--code);color:#dce4ee;border-radius:0 0 8px 8px;overflow:auto;white-space:pre;font:13.2px/1.65 Consolas,"Cascadia Code",Menlo,monospace;tab-size:2}code{font-family:Consolas,"Cascadia Code",Menlo,monospace}.inline{background:#eef1f5;padding:2px 5px;border-radius:4px;font:.92em Consolas,monospace}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;margin:12px 0 22px}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f4f8}td code{overflow-wrap:anywhere}.flow{display:grid;grid-template-columns:1fr;max-width:720px;margin:16px auto;gap:7px;text-align:center}.node{padding:12px;border:1px solid #cbd8e5;background:#f5f9fd;border-radius:8px}.arrow{font-size:1.3rem;color:var(--blue);line-height:1}.filetree{font:14px/1.8 Consolas,monospace;background:#f5f7fa;border:1px solid var(--line);padding:14px;border-radius:8px;white-space:pre;overflow:auto}.footer{margin-top:50px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.9rem}.toplink{display:inline-block;margin-top:16px;font-size:.9rem}@media(max-width:980px){body{display:block}.sidebar{position:relative;width:auto;height:auto;max-height:40vh;border-right:0;border-bottom:1px solid var(--line)}.content{margin-left:0;padding:28px 20px 50px}.grid{grid-template-columns:1fr}h1{font-size:1.8rem}}@media print{.sidebar,.copy-btn{display:none}.content{margin:0;max-width:none;padding:0}body{display:block}pre{white-space:pre-wrap;overflow-wrap:anywhere}}
+</style>
+</head>
+<body id="top">
+<nav class="sidebar" aria-label="Mục lục">
+<h2>MỤC LỤC</h2>
+<p>MyReads · SQL + SQLite Driver trước · Prisma 7 sau</p>
+<ul>
+<li><a href="#start">Bắt đầu &amp; kiến trúc</a></li>
+<li><a href="#create-project">Tạo Next.js + React + TypeScript</a></li>
+<li><a href="#driver-sqlite"><strong>Lộ trình 1: SQLite Driver + SQL (học trước Prisma)</strong></a></li>
+<li style="padding-left:14px"><a href="#driver-overview">Kiến trúc và quan hệ dữ liệu</a></li>
+<li style="padding-left:14px"><a href="#driver-create-db">Cài driver và tạo bảng</a></li>
+<li style="padding-left:14px"><a href="#driver-connection">Seed và truy vấn quan hệ</a></li>
+<li style="padding-left:14px"><a href="#driver-actions">Server Actions / CRUD</a></li>
+<li style="padding-left:14px"><a href="#driver-page">Giao diện Next.js</a></li>
+<li style="padding-left:14px"><a href="#driver-run">Chạy và kiểm thử</a></li>
+<li style="padding-left:14px"><a href="#driver-errors">Lỗi thường gặp</a></li>
+<li><a href="#install">Lộ trình 2: cài Prisma 7</a></li>
+<li><a href="#config-error">Sửa lỗi config Prisma cũ</a></li>
+<li><a href="#tree">Cấu trúc thư mục</a></li>
+<li><a href="#env">File .env</a></li>
+<li><a href="#prisma-config">prisma7.config.ts</a></li>
+<li><a href="#schema">schema.prisma</a></li>
+<li><a href="#migration">Migration &amp; generate</a></li>
+<li><a href="#seed">seed.ts: dữ liệu mẫu</a></li>
+<li><a href="#lib">lib/prisma.ts: Prisma Client</a></li>
+<li><a href="#page">app/page.tsx: đọc và hiển thị</a></li>
+<li><a href="#actions">actions/books.ts: cập nhật dữ liệu</a></li>
+<li><a href="#run">Chạy và kiểm tra Prisma</a></li>
+<li><a href="#cheatsheet-react">Cheat sheet React</a></li>
+<li><a href="#cheatsheet-next">Cheat sheet Next.js</a></li>
+<li><a href="#cheatsheet-prisma">Cheat sheet Prisma 7</a></li>
+<li><a href="#glossary">Từ điển khái niệm</a></li>
+<li><a href="#troubleshoot">Lỗi thường gặp</a></li>
+<li><a href="#sources">Tài liệu chính thức</a></li>
+</ul>
+</nav>
+<main class="content">
+<div class="eyebrow">Cẩm nang thực hành · giải thích code từ đầu</div>
+<h1>Toàn tập MyReads: SQL Driver trước, Prisma sau</h1>
+<p class="lead">Lộ trình học từ nền tảng database: bắt đầu bằng SQLite driver + SQL trực tiếp với quan hệ 1–N và N–N, thực hành CRUD, rồi học Prisma 7 để hiểu ORM đang giúp mình những gì.</p>
+<section id="start"><h2>Bắt đầu &amp; kiến trúc</h2><p class="lead">Bản hướng dẫn chú thích từng lệnh và từng đoạn code. Mục tiêu là hiểu <strong>file nào làm gì, lệnh nào chạy khi nào, dữ liệu đi qua những bước nào</strong> — không chỉ copy code để chạy.</p>
+<div><span class="badge">Next.js App Router</span><span class="badge">React + TypeScript</span><span class="badge">SQLite Driver + SQL</span><span class="badge">Prisma 7 sau khi hiểu SQL</span></div>
+<div class="callout"><strong>Lộ trình trong tài liệu này:</strong> học phần <strong>SQLite Driver + SQL trực tiếp</strong> trước, với mô hình gồm users, books, authors, categories, các bảng nối và reviews. Khi đã hiểu khóa chính/khóa ngoại, JOIN, CRUD và transaction, chuyển sang phần Prisma 7 phía sau để so sánh cách ORM biểu diễn cùng các khái niệm. Project hiện tại của a là <code>F:\kadane\myreads-next</code>; không chạy lại <code>create-next-app</code> trên thư mục đã có code.</div>
+<p>MyReads là ứng dụng quản lý sách. Phần SQL trực tiếp mô hình hóa người dùng, sách, tác giả, thể loại, trạng thái kệ riêng của từng người dùng và review. Sau đó phần Prisma cho a học cách biểu diễn model và quan hệ thông qua ORM.</p>
+<div class="grid"><div class="card"><h3>Next.js UI</h3><p><code>app/page.tsx</code> đọc dữ liệu ở server và tạo giao diện.</p></div><div class="card"><h3>Server Action</h3><p><code>actions/books.ts</code> xử lý yêu cầu thay đổi kệ sách.</p></div><div class="card"><h3>SQLite Driver + SQL (học trước)</h3><p><code>lib/db.ts</code> mở SQLite; <code>lib/books.ts</code> viết SQL trực tiếp.</p></div><div class="card"><h3>Prisma ORM (học sau)</h3><p>Sau khi hiểu quan hệ và CRUD bằng SQL, dùng Prisma để so sánh ORM.</p></div><div class="card"><h3>SQLite</h3><p>Cơ sở dữ liệu lưu vào file trên máy, tiện cho học tập và project nhỏ.</p></div><div class="card"><h3>Config + seed</h3><p>Config hướng dẫn Prisma CLI; seed thêm dữ liệu mẫu để thử ứng dụng.</p></div></div>
+<div class="flow"><div class="node"><strong>Trình duyệt</strong><br><span class="muted">Người dùng xem sách hoặc gửi form</span></div><div class="arrow">↓</div><div class="node"><strong>Next.js Server Component / Server Action</strong><br><span class="muted">Đọc dữ liệu hoặc xử lý thay đổi</span></div><div class="arrow">↓</div><div class="node"><strong>SQLite Driver + SQL</strong><br><span class="muted">Ở lộ trình 1, code gửi SQL trực tiếp qua better-sqlite3</span></div><div class="arrow">↓</div><div class="node"><strong>File SQLite</strong><br><span class="muted">Lưu users, books, authors, categories, bảng nối và reviews</span></div></div>
+<p class="muted">Sau khi đã hiểu SQL và quan hệ, phần Prisma phía sau sẽ trình bày cách ORM giúp viết truy vấn bằng API TypeScript và quản lý schema/migration.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="create-project"><h2>Tạo dự án Next.js (React) + TypeScript từ đầu</h2>
+<p>Phần này bổ sung bước đầu tiên còn thiếu: tạo ứng dụng trước khi cài Prisma. <strong>Next.js là framework xây dựng ứng dụng React</strong>; khi tạo bằng <code>create-next-app</code>, a có thể bật TypeScript ngay từ đầu. Project trong tài liệu này dùng Next.js App Router, nên giao diện React nằm trong thư mục <code>app/</code>.</p>
+<div class="callout"><strong>Quan trọng với a:</strong> project <code>F:\kadane\myreads-next</code> đã tồn tại. Phần lệnh tạo mới bên dưới chỉ dùng khi bắt đầu một project mới. <strong>Không chạy lại lệnh tạo project trên thư mục đang có code.</strong> Với project hiện tại, dùng phần “Nếu project đã tồn tại” ở cuối mục này.</div>
+<h3>Trường hợp A — Tạo project mới từ đầu</h3>
+<p>Trước hết mở PowerShell và chuyển đến thư mục cha, nơi a muốn chứa project. Ví dụ dưới đây sẽ tạo thư mục <code>F:\kadane\myreads-next</code>, vì vậy chỉ chạy khi thư mục đó chưa tồn tại hoặc a chọn một tên thư mục mới.</p>
+<div class="code-box"><div class="code-head"><span><strong>Tạo Next.js + React + TypeScript</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Chuyển đến thư mục cha để tạo project bên trong đó.
+Set-Location F:\kadane
+
+# Tạo ứng dụng Next.js có React và TypeScript.
+# --typescript: chọn TypeScript rõ ràng; .tsx dùng được JSX + kiểu TypeScript.
+# --app: dùng App Router, cấu trúc có thư mục app/.
+# --use-npm: yêu cầu dùng npm để cài package.
+npx create-next-app@latest myreads-next --typescript --app --use-npm
+
+# Đi vào thư mục vừa tạo.
+Set-Location .\myreads-next
+
+# Khởi động máy chủ phát triển.
+npm run dev</code></pre></div>
+<p>Sau khi lệnh khởi tạo chạy, nếu CLI vẫn hỏi các lựa chọn, hãy chọn TypeScript = Yes và App Router = Yes. Khi server báo đã sẵn sàng, mở <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a> trong trình duyệt.</p>
+<h3>Next.js, React và TypeScript là gì?</h3>
+<div class="table-wrap"><table><thead><tr><th>Thành phần</th><th>Vai trò</th><th>Ví dụ trong project</th></tr></thead><tbody>
+<tr><td><strong>React</strong></td><td>Thư viện tạo giao diện từ các component.</td><td><code>Home()</code> trả về JSX để hiển thị danh sách sách.</td></tr>
+<tr><td><strong>Next.js</strong></td><td>Framework dựa trên React; bổ sung định tuyến, chạy code phía server, Server Actions và nhiều chức năng ứng dụng.</td><td><code>app/page.tsx</code> là trang chính; <code>app/layout.tsx</code> là layout chung.</td></tr>
+<tr><td><strong>TypeScript</strong></td><td>Mở rộng JavaScript với kiểu dữ liệu tĩnh để phát hiện nhiều lỗi ngay khi phát triển.</td><td><code>string</code>, <code>number</code>, kiểu tham số hàm và các file <code>.ts</code>/<code>.tsx</code>.</td></tr>
+</tbody></table></div>
+<h3>Vì sao có cả .ts và .tsx?</h3>
+<ul><li><code>.ts</code>: file TypeScript thông thường, không chứa JSX. Ví dụ <code>lib/prisma.ts</code>, <code>actions/books.ts</code>, <code>prisma/seed.ts</code>.</li><li><code>.tsx</code>: file TypeScript có thể chứa JSX — cú pháp giống thẻ HTML dùng để mô tả giao diện React. Ví dụ <code>app/page.tsx</code>.</li><li><code>tsconfig.json</code>: file cấu hình TypeScript; Next.js tạo sẵn khi khởi tạo project.</li><li><code>package.json</code>: chứa tên project, package đã cài và các lệnh trong mục <code>scripts</code>.</li></ul>
+<h3>Trường hợp B — Project đã tồn tại (đúng với a hiện tại)</h3>
+<p>Không tạo mới. Chỉ chuyển đến project cũ và kiểm tra cấu trúc TypeScript:</p>
+<div class="code-box"><div class="code-head"><span><strong>Kiểm tra project F:\kadane\myreads-next</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Đi vào project hiện có; dấu chấm và dấu gạch chéo là đường dẫn tương đối.
+Set-Location F:\kadane\myreads-next
+
+# Nếu True, project có file cấu hình TypeScript.
+Test-Path .\tsconfig.json
+
+# Xem các file và thư mục ở gốc project.
+Get-ChildItem
+
+# Xem các lệnh và package trong package.json.
+Get-Content .\package.json
+
+# Nếu project dùng App Router, xem nội dung thư mục app.
+Get-ChildItem .\app</code></pre></div>
+<p>Nếu có <code>tsconfig.json</code> và các file như <code>app/page.tsx</code>, project đã được cấu hình TypeScript. Không cần cài TypeScript lần nữa chỉ vì muốn dùng TS; hãy kiểm tra cấu hình hiện tại trước khi thay đổi.</p>
+<div class="warning"><strong>Đừng nhầm với React + Vite:</strong> có thể tạo một ứng dụng React thuần bằng Vite, nhưng tài liệu MyReads này dùng Next.js để có App Router và Server Actions. Không tạo một project Vite mới để thay thế project hiện tại, vì cấu trúc và cách chạy server/database sẽ khác.</div>
+<a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="driver-sqlite">
+<h2>Lộ trình 1 — SQLite Driver + SQL trực tiếp (học trước Prisma)</h2>
+<p class="lead">Ở chương này, a sẽ xây dựng phần database MyReads bằng <strong>SQL trực tiếp + driver <code>better-sqlite3</code></strong>, chưa dùng ORM. Sau khi hiểu bảng, khóa, quan hệ và CRUD, a sẽ học Prisma ở các chương phía sau và so sánh cách ORM biểu diễn cùng những ý tưởng đó.</p>
+<div class="callout"><strong>Thứ tự học đề xuất:</strong> (1) hiểu quan hệ dữ liệu; (2) tạo database và bảng bằng SQL; (3) kết nối bằng driver; (4) viết CRUD; (5) gọi CRUD từ Next.js Server Actions; (6) sau khi thuần thục mới chuyển sang Prisma. Chương này dành cho <strong>Next.js App Router</strong>, không phải project React + Vite thuần.</div>
+<div class="warning"><strong>Không chạy cả hai track lên cùng một file DB.</strong> Ví dụ driver sử dụng <code>data/myreads-driver.db</code>; phần Prisma dùng database theo <code>DATABASE_URL</code>. Tách riêng giúp a thử nghiệm mà không làm lẫn dữ liệu hoặc cấu trúc.</div>
+<h3 id="driver-overview">1. Kiến trúc và mô hình dữ liệu</h3>
+<p>Thay vì chỉ có một bảng <code>books</code>, MyReads sẽ có nhiều bảng và quan hệ thực tế hơn: người dùng có kệ sách riêng; một cuốn sách có thể có nhiều tác giả và nhiều thể loại; một người dùng có thể đánh giá nhiều cuốn sách.</p>
+<div class="flow">
+ <div class="node"><strong>React UI trong Next.js</strong><br>Hiển thị sách, gửi form thêm sách, đổi kệ, đánh giá hoặc xóa.</div>
+ <div class="arrow">↓</div>
+ <div class="node"><strong>Server Action</strong><br>Đọc FormData, kiểm tra input và gọi hàm xử lý phía server.</div>
+ <div class="arrow">↓</div>
+ <div class="node"><strong>lib/books.ts</strong><br>Chứa nghiệp vụ và các câu SQL có tham số.</div>
+ <div class="arrow">↓</div>
+ <div class="node"><strong>lib/db.ts + better-sqlite3</strong><br>Mở kết nối, tạo các bảng lần đầu và thực thi SQL.</div>
+ <div class="arrow">↓</div>
+ <div class="node"><strong>data/myreads-driver.db</strong><br>File SQLite lưu dữ liệu lâu dài trên máy đang chạy ứng dụng.</div>
+</div>
+<h3>1.1. Các loại quan hệ trong database</h3>
+<div class="table-wrap"><table><thead><tr><th>Quan hệ</th><th>Bảng liên quan</th><th>Ý nghĩa</th></tr></thead><tbody>
+<tr><td><strong>1–N (một-nhiều)</strong></td><td><code>users → reviews</code></td><td>Một người có thể viết nhiều review; mỗi review thuộc về một người.</td></tr>
+<tr><td><strong>1–N (một-nhiều)</strong></td><td><code>books → reviews</code></td><td>Một cuốn sách có thể có review từ nhiều người.</td></tr>
+<tr><td><strong>N–N (nhiều-nhiều)</strong></td><td><code>books ↔ authors</code>, qua <code>book_authors</code></td><td>Một sách có nhiều tác giả và một tác giả có thể viết nhiều sách.</td></tr>
+<tr><td><strong>N–N (nhiều-nhiều)</strong></td><td><code>books ↔ categories</code>, qua <code>book_categories</code></td><td>Một sách có thể thuộc nhiều thể loại; mỗi thể loại chứa nhiều sách.</td></tr>
+<tr><td><strong>N–N có dữ liệu riêng</strong></td><td><code>users ↔ books</code>, qua <code>user_books</code></td><td>Mỗi người có kệ riêng cho từng sách: muốn đọc, đang đọc hoặc đã đọc.</td></tr>
+</tbody></table></div>
+<div class="callout"><strong>Tại sao phải có bảng nối?</strong> Không nên lưu một chuỗi như <code>"Robert Martin, Jane Doe"</code> trong một cột authors. Bảng <code>book_authors</code> lưu từng cặp <code>(book_id, author_id)</code>, giúp tìm kiếm, đổi tác giả và bảo đảm quan hệ bằng foreign key.</div>
+<h3 id="driver-create-db">2. Cài driver và tạo database</h3>
+<p><code>better-sqlite3</code> là thư viện Node.js giao tiếp trực tiếp với SQLite. SQLite lưu database trong một file; driver sẽ mở file đó và tạo file nếu chưa tồn tại. Thư mục cha cần được tạo trước.</p><div class="code-box"><div class="code-head"><span><strong>PowerShell — cài driver và khai báo kiểu TypeScript</strong> <span class="muted">· POWERSHELL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Chạy tại thư mục gốc của project Next.js.
+npm install better-sqlite3
+
+# Cài type definitions cho cả better-sqlite3 VÀ Node.js (để hết lỗi fs, path, process)
+npm install -D @types/better-sqlite3 @types/node
+
+# BẮT BUỘC: Build lại thư viện C++ nếu npm chặn install-scripts (lỗi node-gyp)
+npm rebuild better-sqlite3
+
+# Xem vị trí hiện tại và kiểm tra đây có phải project Next.js không.
+Get-Location
+npm ls next react</code></pre></div>
+<div class="warning"><strong>Lưu ý sau khi cài đặt:</strong> Nếu VS Code vẫn báo đỏ ở các chữ <code>process</code>, <code>fs</code>, <code>path</code>, hãy bấm <code>Ctrl + Shift + P</code> và chọn <code>Restart TS Server</code> để VS Code nhận diện gói <code>@types/node</code> mới cài.</div><p class="muted">Dòng đầu cài driver dùng lúc chạy; dòng thứ hai thêm type definitions để TypeScript hiểu API driver.</p><p>Trong phần này, a tạo database và các bảng bằng SQL. Vì đây là lộ trình học không dùng ORM, phần tạo cấu trúc cũng được viết trực tiếp bằng <code>CREATE TABLE</code>, không dùng migration của Prisma.</p>
+<h3>2.1. Lược đồ quan hệ cần xây dựng</h3>
+<div class="filetree">users (1) ──── (N) reviews (N) ──── (1) books
+  │                                         │
+  └── (1) ──── (N) user_books (N) ─────────┘
+                                            │
+books (1) ──── (N) book_authors (N) ──── (1) authors
+books (1) ──── (N) book_categories (N) ── (1) categories</div>
+<p>Trong sơ đồ, bảng nối ở giữa biến quan hệ N–N thành hai quan hệ 1–N. Các bảng nối dùng khóa chính ghép để ngăn cùng một cặp được liên kết lặp lại.</p>
+<h3>2.2. File <code>lib/db.ts</code>: kết nối và tạo các bảng</h3>
+<p>File này làm ba việc: (1) tạo thư mục lưu database nếu chưa có; (2) mở file SQLite; (3) bật kiểm tra foreign key và tạo bảng bằng SQL. <code>CREATE TABLE IF NOT EXISTS</code> chỉ tạo bảng khi chưa tồn tại, nó <strong>không tự thay đổi</strong> bảng cũ nếu a sửa định nghĩa.</p><div class="code-box"><div class="code-head"><span><strong>lib/db.ts — database driver và schema SQL</strong> <span class="muted">· TYPESCRIPT + SQL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import &quot;server-only&quot;;
+import Database from &quot;better-sqlite3&quot;;
+import { mkdirSync } from &quot;node:fs&quot;;
+import path from &quot;node:path&quot;;
+
+// process.cwd() trả về thư mục mà lệnh npm được chạy từ đó.
+// Ví dụ: F:\kadane\myreads-next
+const dataDir = path.join(process.cwd(), &quot;data&quot;);
+const dbPath = path.join(dataDir, &quot;myreads-driver.db&quot;);
+
+// Tạo thư mục data nếu chưa tồn tại; recursive tạo cả thư mục cha còn thiếu.
+mkdirSync(dataDir, { recursive: true });
+
+function openDatabase() {
+  // Mở database; nếu file chưa tồn tại, SQLite sẽ tạo file mới.
+  const connection = new Database(dbPath);
+
+  // SQLite có thể cần bật foreign_keys riêng cho từng connection.
+  // Khi bật, nó sẽ kiểm tra các giá trị khóa ngoại và thực hiện ON DELETE CASCADE.
+  connection.pragma(&quot;foreign_keys = ON&quot;);
+
+  // WAL là journal mode, giúp đọc/ghi đồng thời tốt hơn trong nhiều trường hợp.
+  connection.pragma(&quot;journal_mode = WAL&quot;);
+
+  // exec() chạy các câu SQL không trả về một danh sách hàng như SELECT.
+  // Mỗi CREATE TABLE định nghĩa một bảng và các ràng buộc dữ liệu.
+  connection.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS books (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      isbn TEXT UNIQUE,
+      published_year INTEGER CHECK (
+        published_year IS NULL OR published_year BETWEEN 1000 AND 2100
+      ),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS authors (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+      bio TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS categories (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL COLLATE NOCASE UNIQUE
+    );
+
+    -- Bảng nối: một sách có nhiều tác giả; một tác giả có nhiều sách.
+    CREATE TABLE IF NOT EXISTS book_authors (
+      book_id TEXT NOT NULL,
+      author_id TEXT NOT NULL,
+      author_order INTEGER NOT NULL DEFAULT 1,
+      PRIMARY KEY (book_id, author_id),
+      FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+      FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
+    );
+
+    -- Bảng nối: một sách có nhiều thể loại và ngược lại.
+    CREATE TABLE IF NOT EXISTS book_categories (
+      book_id TEXT NOT NULL,
+      category_id TEXT NOT NULL,
+      PRIMARY KEY (book_id, category_id),
+      FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+
+    -- Kệ là quan hệ giữa người dùng và sách, không phải thuộc tính của sách toàn cục.
+    -- Composite primary key đảm bảo mỗi user chỉ có một trạng thái cho mỗi book.
+    CREATE TABLE IF NOT EXISTS user_books (
+      user_id TEXT NOT NULL,
+      book_id TEXT NOT NULL,
+      shelf TEXT NOT NULL DEFAULT &#x27;want_to_read&#x27;
+        CHECK (shelf IN (&#x27;want_to_read&#x27;, &#x27;reading&#x27;, &#x27;read&#x27;)),
+      notes TEXT,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, book_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    );
+
+    -- Một user chỉ có tối đa một review cho cùng một book.
+    CREATE TABLE IF NOT EXISTS reviews (
+      id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
+      book_id TEXT NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      content TEXT NOT NULL DEFAULT &#x27;&#x27;,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (user_id, book_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    );
+  `);
+
+  return connection;
+}
+
+// Lấy kiểu của kết nối do openDatabase() trả về.
+type DatabaseConnection = ReturnType&lt;typeof openDatabase&gt;;
+
+// Giữ một connection dùng chung qua hot reload ở môi trường phát triển.
+const globalForDb = globalThis as unknown as {
+  myReadsDb?: DatabaseConnection;
+};
+
+export const db = globalForDb.myReadsDb ?? openDatabase();
+
+if (process.env.NODE_ENV !== &quot;production&quot;) {
+  globalForDb.myReadsDb = db;
+}</code></pre></div><h3>2.3. Ý nghĩa các ràng buộc quan trọng</h3>
+<div class="table-wrap"><table><thead><tr><th>Cú pháp</th><th>Giải thích dễ hiểu</th><th>Ví dụ trong MyReads</th></tr></thead><tbody>
+<tr><td><code>PRIMARY KEY</code></td><td>Khóa chính, nhận diện duy nhất mỗi hàng.</td><td><code>books.id</code>.</td></tr>
+<tr><td><code>FOREIGN KEY</code></td><td>Khóa ngoại, chỉ cho phép tham chiếu tới bản ghi tồn tại ở bảng khác.</td><td><code>book_authors.book_id</code> phải trỏ tới một sách tồn tại.</td></tr>
+<tr><td><code>UNIQUE</code></td><td>Không cho phép trùng giá trị hoặc cặp giá trị.</td><td>Email người dùng không trùng; một user không thể review cùng book hai lần.</td></tr>
+<tr><td><code>NOT NULL</code></td><td>Cột bắt buộc phải có giá trị.</td><td>Tên sách không được bỏ trống.</td></tr>
+<tr><td><code>CHECK</code></td><td>Ràng buộc chỉ nhận giá trị thỏa điều kiện.</td><td>Điểm review từ 1 đến 5; trạng thái kệ thuộc tập cho phép.</td></tr>
+<tr><td><code>ON DELETE CASCADE</code></td><td>Khi bản ghi cha bị xóa, các bản ghi liên quan được chỉ định sẽ tự xóa.</td><td>Xóa sách sẽ xóa liên kết tác giả/thể loại, trạng thái kệ và review của sách đó.</td></tr>
+<tr><td><code>PRIMARY KEY (user_id, book_id)</code></td><td>Khóa chính ghép: cả cặp cùng nhau phải duy nhất.</td><td>Mỗi user có tối đa một dòng kệ cho mỗi sách.</td></tr>
+</tbody></table></div>
+<div class="warning"><strong>Về schema changes:</strong> thêm một <code>CREATE TABLE IF NOT EXISTS</code> vào code chỉ tạo bảng mới nếu chưa có; nó không thêm cột vào bảng đã tồn tại. Trong lộ trình driver, khi thay đổi schema cần tạo migration SQL riêng hoặc sao lưu rồi khởi tạo lại file database dùng thử. Không xóa database nếu trong đó có dữ liệu cần giữ.</div>
+<h3 id="driver-connection">3. Tạo dữ liệu mẫu (seed) để thử relationship</h3>
+<p>Ta cần các bản ghi ở bảng cha trước khi thêm bảng nối. Ví dụ phải có user, book, author và category trước, rồi mới tạo dòng trong <code>book_authors</code>, <code>book_categories</code>, <code>user_books</code> và <code>reviews</code>.</p><div class="code-box"><div class="code-head"><span><strong>scripts/seed-driver.ts — tạo dữ liệu mẫu có quan hệ</strong> <span class="muted">· TYPESCRIPT + SQL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { randomUUID } from &quot;node:crypto&quot;;
+import { db } from &quot;../lib/db&quot;;
+
+// Transaction gom nhiều thao tác thành một đơn vị: nếu lỗi, SQLite rollback.
+const seed = db.transaction(() =&gt; {
+  // OR IGNORE giúp script có thể chạy lại mà không tạo trùng email/tên duy nhất.
+  db.prepare(`INSERT OR IGNORE INTO users (id, name, email)
+              VALUES (?, ?, ?)`).run(&quot;user-demo&quot;, &quot;Quyen&quot;, &quot;quyen@example.test&quot;);
+
+  db.prepare(`INSERT OR IGNORE INTO authors (id, name, bio)
+              VALUES (?, ?, ?)`).run(&quot;author-martin&quot;, &quot;Robert C. Martin&quot;, &quot;Software engineering author&quot;);
+  db.prepare(`INSERT OR IGNORE INTO authors (id, name, bio)
+              VALUES (?, ?, ?)`).run(&quot;author-hunt&quot;, &quot;Andrew Hunt&quot;, &quot;Co-author of The Pragmatic Programmer&quot;);
+  db.prepare(`INSERT OR IGNORE INTO authors (id, name, bio)
+              VALUES (?, ?, ?)`).run(&quot;author-thomas&quot;, &quot;David Thomas&quot;, &quot;Co-author of The Pragmatic Programmer&quot;);
+
+  db.prepare(`INSERT OR IGNORE INTO categories (id, name)
+              VALUES (?, ?)`).run(&quot;cat-programming&quot;, &quot;Programming&quot;);
+  db.prepare(`INSERT OR IGNORE INTO categories (id, name)
+              VALUES (?, ?)`).run(&quot;cat-career&quot;, &quot;Software Craftsmanship&quot;);
+
+  db.prepare(`INSERT OR IGNORE INTO books (id, title, isbn, published_year)
+              VALUES (?, ?, ?, ?)`).run(&quot;book-clean-code&quot;, &quot;Clean Code&quot;, &quot;9780132350884&quot;, 2008);
+  db.prepare(`INSERT OR IGNORE INTO books (id, title, isbn, published_year)
+              VALUES (?, ?, ?, ?)`).run(&quot;book-pragmatic&quot;, &quot;The Pragmatic Programmer&quot;, &quot;9780135957059&quot;, 2019);
+
+  // Gán tác giả cho sách bằng bảng nối book_authors.
+  const linkAuthor = db.prepare(`INSERT OR IGNORE INTO book_authors (book_id, author_id, author_order)
+                                 VALUES (?, ?, ?)`);
+  linkAuthor.run(&quot;book-clean-code&quot;, &quot;author-martin&quot;, 1);
+  linkAuthor.run(&quot;book-pragmatic&quot;, &quot;author-hunt&quot;, 1);
+  linkAuthor.run(&quot;book-pragmatic&quot;, &quot;author-thomas&quot;, 2);
+
+  // Gán nhiều thể loại cho sách qua bảng nối book_categories.
+  const linkCategory = db.prepare(`INSERT OR IGNORE INTO book_categories (book_id, category_id)
+                                   VALUES (?, ?)`);
+  linkCategory.run(&quot;book-clean-code&quot;, &quot;cat-programming&quot;);
+  linkCategory.run(&quot;book-clean-code&quot;, &quot;cat-career&quot;);
+  linkCategory.run(&quot;book-pragmatic&quot;, &quot;cat-programming&quot;);
+
+  // Trạng thái kệ thuộc từng người dùng, vì mỗi người có thể đọc một trạng thái khác nhau.
+  db.prepare(`INSERT OR IGNORE INTO user_books (user_id, book_id, shelf, notes)
+              VALUES (?, ?, ?, ?)`).run(&quot;user-demo&quot;, &quot;book-clean-code&quot;, &quot;read&quot;, &quot;Useful reference&quot;);
+  db.prepare(`INSERT OR IGNORE INTO user_books (user_id, book_id, shelf, notes)
+              VALUES (?, ?, ?, ?)`).run(&quot;user-demo&quot;, &quot;book-pragmatic&quot;, &quot;reading&quot;, &quot;Read a chapter daily&quot;);
+
+  // Review liên kết đồng thời đến user và book.
+  db.prepare(`INSERT OR IGNORE INTO reviews (id, user_id, book_id, rating, content)
+              VALUES (?, ?, ?, ?, ?)`).run(randomUUID(), &quot;user-demo&quot;, &quot;book-clean-code&quot;, 5, &quot;A practical software engineering book.&quot;);
+});
+
+seed();
+console.log(&quot;Driver seed completed.&quot;);
+// Seed script độc lập nên đóng kết nối sau khi đã chèn xong dữ liệu.
+db.close();</code></pre></div><p>Tạo thư mục <code>scripts</code> ở gốc project rồi lưu đoạn trên thành <code>scripts/seed-driver.ts</code>. Chạy <code>npx tsx scripts/seed-driver.ts</code>. Vì <code>lib/db.ts</code> tạo các bảng lúc mở database, seed script có thể chèn dữ liệu ngay sau khi import <code>db</code>.</p>
+<h3>3.1. Quan sát dữ liệu quan hệ bằng SQL JOIN</h3>
+<p><code>JOIN</code> ghép dữ liệu từ nhiều bảng dựa trên một điều kiện. Truy vấn sau lấy sách, tác giả, thể loại và kệ của một người. Các bảng nối được truy vấn trong các truy vấn con để tránh nhân đôi sách khi một sách có nhiều tác giả và nhiều thể loại.</p><div class="code-box"><div class="code-head"><span><strong>Ví dụ SQL JOIN và truy vấn con</strong> <span class="muted">· SQL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>SELECT
+  b.id,
+  b.title,
+  b.published_year,
+  COALESCE((
+    SELECT group_concat(a.name, &#x27;, &#x27;)
+    FROM book_authors ba
+    JOIN authors a ON a.id = ba.author_id
+    WHERE ba.book_id = b.id
+  ), &#x27;&#x27;) AS authors,
+  COALESCE((
+    SELECT group_concat(c.name, &#x27;, &#x27;)
+    FROM book_categories bc
+    JOIN categories c ON c.id = bc.category_id
+    WHERE bc.book_id = b.id
+  ), &#x27;&#x27;) AS categories,
+  ub.shelf,
+  (SELECT ROUND(AVG(r.rating), 1)
+   FROM reviews r WHERE r.book_id = b.id) AS avg_rating
+FROM books b
+LEFT JOIN user_books ub
+  ON ub.book_id = b.id AND ub.user_id = ?
+ORDER BY b.title COLLATE NOCASE;</code></pre></div><p><code>LEFT JOIN</code> giữ lại cả những cuốn chưa có trạng thái kệ cho user đó. <code>COALESCE</code> thay giá trị <code>NULL</code> bằng chuỗi rỗng. Truy vấn con tính danh sách tác giả/thể loại và điểm đánh giá trung bình cho từng cuốn.</p>
+<h3>3.2. Cài các kiểu TypeScript và hàm CRUD</h3>
+<p>Không dùng ORM nghĩa là a tự viết SQL. Ta tách SQL vào <code>lib/books.ts</code>, tránh đặt câu truy vấn rải rác trong giao diện. Các hàm dưới đây dùng prepared statements với placeholder <code>?</code>, không ghép input người dùng trực tiếp vào câu SQL.</p><div class="code-box"><div class="code-head"><span><strong>lib/books.ts — truy vấn có quan hệ và CRUD</strong> <span class="muted">· TYPESCRIPT + SQL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import &quot;server-only&quot;;
+import { randomUUID } from &quot;node:crypto&quot;;
+import { db } from &quot;@/lib/db&quot;;
+
+export type Shelf = &quot;want_to_read&quot; | &quot;reading&quot; | &quot;read&quot;;
+
+export type BookListItem = {
+  id: string;
+  title: string;
+  isbn: string | null;
+  published_year: number | null;
+  authors: string;
+  categories: string;
+  shelf: Shelf | null;
+  avg_rating: number | null;
+  my_rating: number | null;
+  my_review: string | null;
+};
+
+// READ: lấy danh sách sách cùng tác giả, thể loại và dữ liệu của một user.
+export function listBooksForUser(userId: string): BookListItem[] {
+  const rows = db.prepare(`
+    SELECT b.id, b.title, b.isbn, b.published_year,
+      COALESCE((SELECT group_concat(a.name, &#x27;, &#x27;)
+        FROM book_authors ba JOIN authors a ON a.id = ba.author_id
+        WHERE ba.book_id = b.id), &#x27;&#x27;) AS authors,
+      COALESCE((SELECT group_concat(c.name, &#x27;, &#x27;)
+        FROM book_categories bc JOIN categories c ON c.id = bc.category_id
+        WHERE bc.book_id = b.id), &#x27;&#x27;) AS categories,
+      ub.shelf,
+      (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.book_id = b.id) AS avg_rating,
+      (SELECT r.rating FROM reviews r WHERE r.book_id = b.id AND r.user_id = ?) AS my_rating,
+      (SELECT r.content FROM reviews r WHERE r.book_id = b.id AND r.user_id = ?) AS my_review
+    FROM books b
+    LEFT JOIN user_books ub ON ub.book_id = b.id AND ub.user_id = ?
+    ORDER BY b.title COLLATE NOCASE
+  `).all(userId, userId, userId);
+
+  // Assertion chỉ hướng dẫn TypeScript; không tự validate dữ liệu runtime.
+  return rows as BookListItem[];
+}
+
+// Hàm phụ: tìm hoặc tạo tác giả theo tên. Dùng trong transaction tạo sách.
+function getOrCreateAuthor(name: string): string {
+  const cleanName = name.trim();
+  if (!cleanName) throw new Error(&quot;Tên tác giả không được để trống.&quot;);
+  db.prepare(`INSERT OR IGNORE INTO authors (id, name) VALUES (?, ?)`)
+    .run(randomUUID(), cleanName);
+  const row = db.prepare(`SELECT id FROM authors WHERE name = ? COLLATE NOCASE`)
+    .get(cleanName) as { id: string } | undefined;
+  if (!row) throw new Error(&quot;Không thể tìm hoặc tạo tác giả.&quot;);
+  return row.id;
+}
+
+// Hàm phụ: tìm hoặc tạo thể loại theo tên.
+function getOrCreateCategory(name: string): string {
+  const cleanName = name.trim();
+  if (!cleanName) throw new Error(&quot;Tên thể loại không được để trống.&quot;);
+  db.prepare(`INSERT OR IGNORE INTO categories (id, name) VALUES (?, ?)`)
+    .run(randomUUID(), cleanName);
+  const row = db.prepare(`SELECT id FROM categories WHERE name = ? COLLATE NOCASE`)
+    .get(cleanName) as { id: string } | undefined;
+  if (!row) throw new Error(&quot;Không thể tìm hoặc tạo thể loại.&quot;);
+  return row.id;
+}
+
+export type CreateBookInput = {
+  title: string;
+  isbn: string | null;
+  publishedYear: number | null;
+  authorNames: string[];
+  categoryNames: string[];
+};
+
+// CREATE: thêm sách và liên kết tác giả/thể loại trong một transaction.
+export function createBook(input: CreateBookInput): string {
+  const title = input.title.trim();
+  if (!title) throw new Error(&quot;Tên sách không được để trống.&quot;);
+
+  const transaction = db.transaction(() =&gt; {
+    const id = randomUUID();
+    db.prepare(`INSERT INTO books (id, title, isbn, published_year)
+                VALUES (?, ?, ?, ?)`).run(
+      id, title, input.isbn?.trim() || null, input.publishedYear
+    );
+
+    // Tạo/fetch tác giả rồi thêm quan hệ qua bảng nối book_authors.
+    input.authorNames.map((name) =&gt; name.trim()).filter(Boolean)
+      .forEach((name, index) =&gt; {
+        const authorId = getOrCreateAuthor(name);
+        db.prepare(`INSERT OR IGNORE INTO book_authors (book_id, author_id, author_order)
+                    VALUES (?, ?, ?)`).run(id, authorId, index + 1);
+      });
+
+    // Tạo/fetch thể loại rồi thêm quan hệ qua bảng nối book_categories.
+    input.categoryNames.map((name) =&gt; name.trim()).filter(Boolean)
+      .forEach((name) =&gt; {
+        const categoryId = getOrCreateCategory(name);
+        db.prepare(`INSERT OR IGNORE INTO book_categories (book_id, category_id)
+                    VALUES (?, ?)`).run(id, categoryId);
+      });
+
+    return id;
+  });
+
+  // Transaction: nếu một thao tác trong khối lỗi, nhóm thay đổi được rollback.
+  return transaction();
+}
+
+// UPDATE: tạo hoặc cập nhật kệ sách của một người dùng.
+export function setUserShelf(userId: string, bookId: string, shelf: Shelf): void {
+  const allowed: Shelf[] = [&quot;want_to_read&quot;, &quot;reading&quot;, &quot;read&quot;];
+  if (!allowed.includes(shelf)) throw new Error(&quot;Kệ sách không hợp lệ.&quot;);
+
+  db.prepare(`
+    INSERT INTO user_books (user_id, book_id, shelf, updated_at)
+    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(user_id, book_id) DO UPDATE SET
+      shelf = excluded.shelf,
+      updated_at = CURRENT_TIMESTAMP
+  `).run(userId, bookId, shelf);
+}
+
+// CREATE/UPDATE review: UNIQUE(user_id, book_id) cho phép mỗi user một review/book.
+export function saveReview(userId: string, bookId: string, rating: number, content: string): void {
+  if (!Number.isInteger(rating) || rating &lt; 1 || rating &gt; 5) {
+    throw new Error(&quot;Điểm đánh giá phải từ 1 đến 5.&quot;);
+  }
+
+  db.prepare(`
+    INSERT INTO reviews (id, user_id, book_id, rating, content)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, book_id) DO UPDATE SET
+      rating = excluded.rating,
+      content = excluded.content,
+      created_at = CURRENT_TIMESTAMP
+  `).run(randomUUID(), userId, bookId, rating, content.trim());
+}
+
+// DELETE: foreign keys + ON DELETE CASCADE sẽ xóa các liên kết và review của sách.
+export function deleteBook(bookId: string): void {
+  const result = db.prepare(`DELETE FROM books WHERE id = ?`).run(bookId);
+  if (result.changes === 0) throw new Error(&quot;Không tìm thấy sách để xóa.&quot;);
+}</code></pre></div><h3 id="driver-actions">4. Server Actions cho CREATE, UPDATE, REVIEW và DELETE</h3>
+<p>Server Action là hàm phía server được form gọi. File nằm trong <code>app/actions/books.ts</code>. Mỗi thao tác nhận <code>FormData</code>, kiểm tra input, gọi hàm ở <code>lib/books.ts</code>, sau đó <code>revalidatePath("/")</code> yêu cầu Next.js làm mới dữ liệu cho trang chủ.</p><div class="code-box"><div class="code-head"><span><strong>app/actions/books.ts — Server Actions</strong> <span class="muted">· TYPESCRIPT</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>&quot;use server&quot;;
+
+import { revalidatePath } from &quot;next/cache&quot;;
+import { createBook, deleteBook, saveReview, setUserShelf, type Shelf } from &quot;@/lib/books&quot;;
+
+// Đây là user mẫu trong seed-driver.ts. Ứng dụng thật phải lấy user ID từ session đăng nhập.
+const DEMO_USER_ID = &quot;user-demo&quot;;
+
+function getText(formData: FormData, key: string): string {
+  const value = formData.get(key);
+  return typeof value === &quot;string&quot; ? value.trim() : &quot;&quot;;
+}
+
+function splitNames(value: string): string[] {
+  // Cho phép nhập nhiều tên cách nhau bằng dấu phẩy.
+  return value.split(&quot;,&quot;).map((name) =&gt; name.trim()).filter(Boolean);
+}
+
+export async function createBookAction(formData: FormData) {
+  const title = getText(formData, &quot;title&quot;);
+  const isbn = getText(formData, &quot;isbn&quot;) || null;
+  const yearText = getText(formData, &quot;publishedYear&quot;);
+  const publishedYear = yearText ? Number(yearText) : null;
+
+  if (yearText &amp;&amp; (!Number.isInteger(publishedYear) || publishedYear! &lt; 1000 || publishedYear! &gt; 2100)) {
+    throw new Error(&quot;Năm xuất bản phải là số nguyên hợp lệ.&quot;);
+  }
+
+  createBook({
+    title,
+    isbn,
+    publishedYear,
+    authorNames: splitNames(getText(formData, &quot;authors&quot;)),
+    categoryNames: splitNames(getText(formData, &quot;categories&quot;)),
+  });
+
+  revalidatePath(&quot;/&quot;);
+}
+
+export async function updateShelfAction(formData: FormData) {
+  const bookId = getText(formData, &quot;bookId&quot;);
+  const shelfValue = getText(formData, &quot;shelf&quot;);
+  const allowed: Shelf[] = [&quot;want_to_read&quot;, &quot;reading&quot;, &quot;read&quot;];
+  if (!bookId || !allowed.includes(shelfValue as Shelf)) throw new Error(&quot;Dữ liệu kệ sách không hợp lệ.&quot;);
+
+  setUserShelf(DEMO_USER_ID, bookId, shelfValue as Shelf);
+  revalidatePath(&quot;/&quot;);
+}
+
+export async function saveReviewAction(formData: FormData) {
+  const bookId = getText(formData, &quot;bookId&quot;);
+  const rating = Number(getText(formData, &quot;rating&quot;));
+  const content = getText(formData, &quot;content&quot;);
+  if (!bookId) throw new Error(&quot;Thiếu ID sách.&quot;);
+
+  saveReview(DEMO_USER_ID, bookId, rating, content);
+  revalidatePath(&quot;/&quot;);
+}
+
+export async function deleteBookAction(formData: FormData) {
+  const bookId = getText(formData, &quot;bookId&quot;);
+  if (!bookId) throw new Error(&quot;Thiếu ID sách.&quot;);
+
+  deleteBook(bookId);
+  revalidatePath(&quot;/&quot;);
+}</code></pre></div><div class="warning"><strong>Về xác thực:</strong> ví dụ trên dùng một tài khoản demo cố định để học luồng. Ứng dụng nhiều người dùng thật phải lấy user ID từ hệ thống đăng nhập/session ở phía server, không tin user ID do form gửi lên.</div>
+<h3 id="driver-page">5. Giao diện Next.js: hiển thị sách và form CRUD</h3>
+<p>Trang là Server Component mặc định, nên có thể gọi hàm truy vấn trực tiếp ở server. Các form gọi Server Actions. Vì driver <code>better-sqlite3</code> cần Node.js, route nên dùng Node.js runtime chứ không phải Edge Runtime.</p><div class="code-box"><div class="code-head"><span><strong>app/page.tsx — trang đọc và thao tác với dữ liệu</strong> <span class="muted">· TSX / REACT</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { listBooksForUser } from &quot;@/lib/books&quot;;
+import { createBookAction, deleteBookAction, saveReviewAction, updateShelfAction } from &quot;@/app/actions/books&quot;;
+
+export const runtime = &quot;nodejs&quot;;
+
+// User mẫu đã được tạo trong scripts/seed-driver.ts.
+const DEMO_USER_ID = &quot;user-demo&quot;;
+
+export default function Home() {
+  // Truy vấn chạy phía server; không gửi đối tượng database tới trình duyệt.
+  const books = listBooksForUser(DEMO_USER_ID);
+
+  return (
+    &lt;main style={{ maxWidth: 900, margin: &quot;40px auto&quot;, padding: 20 }}&gt;
+      &lt;h1&gt;MyReads — SQL Driver&lt;/h1&gt;
+      &lt;p&gt;Danh sách sách, tác giả, thể loại và đánh giá.&lt;/p&gt;
+
+      &lt;h2&gt;Thêm sách&lt;/h2&gt;
+      &lt;form action={createBookAction}&gt;
+        &lt;p&gt;&lt;label&gt;Tên sách &lt;input name=&quot;title&quot; required /&gt;&lt;/label&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;label&gt;ISBN &lt;input name=&quot;isbn&quot; /&gt;&lt;/label&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;label&gt;Năm xuất bản &lt;input name=&quot;publishedYear&quot; type=&quot;number&quot; /&gt;&lt;/label&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;label&gt;Tác giả (nhiều tên, cách nhau bằng dấu phẩy) &lt;input name=&quot;authors&quot; /&gt;&lt;/label&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;label&gt;Thể loại (nhiều tên, cách nhau bằng dấu phẩy) &lt;input name=&quot;categories&quot; /&gt;&lt;/label&gt;&lt;/p&gt;
+        &lt;button type=&quot;submit&quot;&gt;Thêm sách&lt;/button&gt;
+      &lt;/form&gt;
+
+      &lt;h2&gt;Danh sách&lt;/h2&gt;
+      {books.length === 0 ? &lt;p&gt;Chưa có sách. Hãy chạy seed hoặc thêm sách mới.&lt;/p&gt; : null}
+      &lt;ul&gt;
+        {books.map((book) =&gt; (
+          &lt;li key={book.id} style={{ marginBottom: 28 }}&gt;
+            &lt;strong&gt;{book.title}&lt;/strong&gt; ({book.published_year ?? &quot;Chưa rõ năm&quot;})
+            &lt;p&gt;Tác giả: {book.authors || &quot;Chưa có&quot;}&lt;/p&gt;
+            &lt;p&gt;Thể loại: {book.categories || &quot;Chưa gán&quot;}&lt;/p&gt;
+            &lt;p&gt;Điểm trung bình: {book.avg_rating ?? &quot;Chưa có review&quot;}&lt;/p&gt;
+
+            &lt;form action={updateShelfAction}&gt;
+              &lt;input type=&quot;hidden&quot; name=&quot;bookId&quot; value={book.id} /&gt;
+              &lt;label&gt;Kệ của tôi: {&quot; &quot;}
+                &lt;select name=&quot;shelf&quot; defaultValue={book.shelf ?? &quot;want_to_read&quot;}&gt;
+                  &lt;option value=&quot;want_to_read&quot;&gt;Muốn đọc&lt;/option&gt;
+                  &lt;option value=&quot;reading&quot;&gt;Đang đọc&lt;/option&gt;
+                  &lt;option value=&quot;read&quot;&gt;Đã đọc&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;button type=&quot;submit&quot;&gt;Lưu kệ&lt;/button&gt;
+            &lt;/form&gt;
+
+            &lt;form action={saveReviewAction}&gt;
+              &lt;input type=&quot;hidden&quot; name=&quot;bookId&quot; value={book.id} /&gt;
+              &lt;label&gt;Điểm: {&quot; &quot;}
+                &lt;select name=&quot;rating&quot; defaultValue={String(book.my_rating ?? 5)}&gt;
+                  &lt;option value=&quot;1&quot;&gt;1&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;2&lt;/option&gt;
+                  &lt;option value=&quot;3&quot;&gt;3&lt;/option&gt;&lt;option value=&quot;4&quot;&gt;4&lt;/option&gt;&lt;option value=&quot;5&quot;&gt;5&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;input name=&quot;content&quot; defaultValue={book.my_review ?? &quot;&quot;} placeholder=&quot;Nhận xét của tôi&quot; /&gt;
+              &lt;button type=&quot;submit&quot;&gt;Lưu review&lt;/button&gt;
+            &lt;/form&gt;
+
+            &lt;form action={deleteBookAction}&gt;
+              &lt;input type=&quot;hidden&quot; name=&quot;bookId&quot; value={book.id} /&gt;
+              &lt;button type=&quot;submit&quot;&gt;Xóa sách&lt;/button&gt;
+            &lt;/form&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/main&gt;
+  );
+}</code></pre></div><h3 id="driver-run">6. Chạy lần đầu và kiểm thử quan hệ</h3>
+<p>Thực hiện các bước theo thứ tự. Trước khi chạy, bảo đảm project thật sự là Next.js App Router (có dependency <code>next</code>, file <code>app/page.tsx</code> và script <code>next dev</code>).</p><div class="code-box"><div class="code-head"><span><strong>PowerShell — chạy driver track</strong> <span class="muted">· POWERSHELL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># 1. Cài driver và kiểu dữ liệu nếu chưa cài.
+npm install better-sqlite3
+npm install -D @types/better-sqlite3 tsx
+
+# 2. Chạy seed: import lib/db.ts sẽ tự tạo file data/ và các bảng nếu chưa có.
+npx tsx scripts/seed-driver.ts
+
+# 3. Chạy Next.js development server.
+npm run dev</code></pre></div><p>Sau khi mở trang ở URL Next.js hiển thị trong terminal (thường là <code>http://localhost:3000</code>), a có thể thử:</p>
+<ol>
+<li>Chạy seed và xác nhận hai sách mẫu xuất hiện.</li>
+<li>Thêm một sách với hai tác giả, hai thể loại; đọc SQL truy vấn danh sách và xem các tên được gộp lại.</li>
+<li>Đổi kệ của sách thành <code>reading</code>; kiểm tra bảng <code>user_books</code> có dòng mới hoặc trạng thái đã đổi.</li>
+<li>Lưu review; thử lưu review cho cùng user và book lần nữa để thấy câu <code>ON CONFLICT</code> cập nhật thay vì thêm trùng.</li>
+<li>Xóa sách; kiểm tra các liên kết tương ứng trong bảng nối và review bị xóa nhờ <code>ON DELETE CASCADE</code>.</li>
+</ol>
+<h3 id="driver-errors">7. Lỗi thường gặp và giới hạn</h3>
+<div class="table-wrap"><table><thead><tr><th>Triệu chứng</th><th>Nguyên nhân</th><th>Kiểm tra</th></tr></thead><tbody>
+<tr><td><code>no such table</code></td><td>Mở file database khác hoặc schema khởi tạo chưa chạy.</td><td>Kiểm tra <code>dbPath</code>; import đúng <code>lib/db.ts</code>.</td></tr>
+<tr><td><code>FOREIGN KEY constraint failed</code></td><td>Chèn dòng ở bảng nối khi bản ghi cha chưa tồn tại, hoặc khóa ngoại không hợp lệ.</td><td>Tạo user/book/author/category trước; bật <code>foreign_keys = ON</code>.</td></tr>
+<tr><td><code>UNIQUE constraint failed</code></td><td>Trùng email, ISBN hoặc quan hệ đã có.</td><td>Dùng upsert/INSERT OR IGNORE có chủ đích hoặc kiểm tra bản ghi trước.</td></tr>
+<tr><td><code>CHECK constraint failed</code></td><td>Shelf ngoài danh sách hợp lệ hoặc điểm review ngoài 1–5.</td><td>Kiểm tra input trước khi gửi SQL; giữ CHECK ở database như lớp bảo vệ thứ hai.</td></tr>
+<tr><td>Thêm cột vào CREATE TABLE mà database cũ không đổi</td><td><code>IF NOT EXISTS</code> không sửa bảng cũ.</td><td>Tạo migration SQL và sao lưu; không xóa file DB nếu có dữ liệu cần giữ.</td></tr>
+</tbody></table></div>
+<div class="callout"><strong>Giới hạn của ví dụ:</strong> đây là ứng dụng học tập với một user demo và database file cục bộ. Nó chưa có hệ thống đăng nhập, phân quyền, CSRF/throttling tùy chỉnh, phân trang hoặc chiến lược migration hoàn chỉnh cho production. Đừng dùng ID user cố định trong ứng dụng thật.</div>
+<div class="success"><strong>Khi đã làm chủ driver + SQL, bước học Prisma sẽ dễ hơn:</strong> mỗi thao tác như <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, khóa ngoại và JOIN mà a đã hiểu sẽ được biểu diễn bằng API Prisma. Hãy học theo cùng một mô hình quan hệ để so sánh ORM làm thay phần nào.</div>
+<a class="toplink" href="#top">↑ Về đầu trang</a>
+</section>
+<section id="install"><h2>Lộ trình 2 — Cài Prisma 7 và so sánh ORM</h2><div class="callout"><strong>Học phần này sau driver + SQL.</strong> Ở lộ trình 1, a đã thấy SQL, khóa ngoại, bảng nối và CRUD. Bây giờ Prisma sẽ giúp a biểu diễn các thao tác database bằng API TypeScript thay vì tự viết từng câu SQL. Những phần Prisma trong tài liệu là track riêng; đừng dùng đồng thời hai lớp truy cập dữ liệu trên cùng một thao tác.</div><p>Mở PowerShell tại thư mục project. Nếu dấu nhắc là <code>PS F:\kadane\myreads-next&gt;</code> thì đã đúng vị trí. Những lệnh terminal thường chạy từ thư mục gốc, nơi có <code>package.json</code>.</p><div class="code-box"><div class="code-head"><span><strong>Kiểm tra vị trí, Node và config</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># In ra thư mục hiện tại; cần là thư mục myreads-next.
+Get-Location
+
+# Phiên bản Node.js và npm. Đây là hai công cụ chạy JavaScript và cài package.
+node -v
+npm -v
+
+# Liệt kê file config Prisma trong thư mục gốc.
+Get-ChildItem *prisma*config*.ts</code></pre></div><p><strong>Vai trò của từng package:</strong></p><div class="table-wrap"><table><thead><tr><th>Package</th><th>Vai trò</th></tr></thead><tbody><tr><td><code>prisma</code></td><td>CLI để chạy <code>init</code>, <code>migrate</code>, <code>generate</code>, <code>db seed</code>.</td></tr><tr><td><code>@prisma/client</code></td><td>API mà code ứng dụng gọi, ví dụ <code>prisma.book.findMany()</code>.</td></tr><tr><td><code>@prisma/adapter-better-sqlite3</code></td><td>Adapter kết nối Prisma Client với SQLite qua better-sqlite3.</td></tr><tr><td><code>better-sqlite3</code></td><td>Thư viện Node.js để thao tác với file SQLite.</td></tr><tr><td><code>tsx</code></td><td>Chạy file TypeScript, dùng ở đây để chạy <code>seed.ts</code>.</td></tr><tr><td><code>dotenv</code></td><td>Đọc file <code>.env</code> để đưa biến cấu hình vào <code>process.env</code>.</td></tr><tr><td><code>@types/node</code>, <code>@types/better-sqlite3</code></td><td>Type definitions giúp TypeScript hiểu các API tương ứng.</td></tr></tbody></table></div><div class="code-box"><div class="code-head"><span><strong>Cài Prisma 7.10.1 và các package</strong> <span class="muted">· PowerShell / npm</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Công cụ phục vụ phát triển: Prisma CLI, tsx và bộ khai báo kiểu.
+npm install -D prisma@7.10.1 tsx @types/node @types/better-sqlite3
+
+# Package dùng khi ứng dụng chạy: Client, adapter, SQLite driver và dotenv.
+npm install @prisma/client@7.10.1 @prisma/adapter-better-sqlite3@7.10.1 better-sqlite3 dotenv
+
+# Kiểm tra phiên bản đã cài.
+npm ls prisma @prisma/client @prisma/adapter-better-sqlite3</code></pre></div><p><code>npm install</code> tải package vào project và cập nhật <code>package.json</code>/<code>package-lock.json</code>. Cờ <code>-D</code> (viết tắt của <code>--save-dev</code>) đánh dấu package phục vụ phát triển. <code>npm ls</code> liệt kê phiên bản package hiện đang được cài.</p><div class="warning"><strong>Không tạo project mới lần nữa.</strong> <code>npx create-next-app</code> chỉ dùng khi bắt đầu project Next.js mới. Vì a đã có <code>myreads-next</code>, bỏ qua bước đó. Lệnh <code>prisma init</code> cũng chỉ dùng khi chưa có file Prisma cần thiết; kiểm tra file hiện có trước.</div><div class="code-box"><div class="code-head"><span><strong>Khởi tạo Prisma (chỉ trong project chưa có cấu hình)</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Chạy ở thư mục gốc của project.
+# Tạo prisma/schema.prisma, .env và prisma7.config.ts.
+# --datasource-provider sqlite: chọn SQLite làm loại database.
+# --output ../generated/prisma: nơi lưu Prisma Client được sinh ra.
+npx prisma init --datasource-provider sqlite --output ../generated/prisma</code></pre></div><p>Vì đã cài Prisma CLI tại project, <code>npx prisma</code> sẽ dùng phiên bản cục bộ theo dependency thay vì cố tải <code>@latest</code>. Trong project hiện tại, nếu lệnh <code>init</code> báo file đã tồn tại thì dừng và kiểm tra — đừng ghi đè cấu hình đang dùng.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="config-error"><h2>Sửa lỗi config Prisma cũ</h2><p>Lỗi trước đó là <code>Failed to parse syntax of config file ... prisma.config.ts</code>. Nghĩa là CLI chưa đọc được file config, nên chưa thể hoàn tất thao tác. Hãy đọc nội dung trước khi đổi tên hoặc xóa.</p><div class="code-box"><div class="code-head"><span><strong>Đọc các file cấu hình có thể đang tồn tại</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Hiển thị nội dung file cấu hình gây lỗi, nếu file vẫn tồn tại.
+Get-Content .\prisma.config.ts
+
+# Kiểm tra và đọc config dành cho Prisma 7 (nếu đã có).
+Test-Path .\prisma7.config.ts
+Get-Content .\prisma7.config.ts</code></pre></div><p>Nếu <code>prisma.config.ts</code> là file tạo ra trong lần thử Prisma 8 và không còn dùng, hãy sao lưu rồi chuyển ra khỏi thư mục gốc. Đừng làm bước này nếu chưa biết file đang chứa cấu hình gì.</p><div class="code-box"><div class="code-head"><span><strong>Sao lưu config cũ (chỉ khi xác nhận không còn dùng)</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Tạo thư mục backup nếu chưa có.
+New-Item -ItemType Directory -Force .\_backup
+
+# Chuyển file config cũ ra khỏi thư mục gốc.
+# Chỉ chạy nếu .\prisma.config.ts thực sự là config cũ cần tách.
+Move-Item .\prisma.config.ts .\_backup\prisma8.config.ts</code></pre></div><div class="callout"><strong>Quy tắc cho tài liệu này:</strong> dùng <code>prisma7.config.ts</code> ở thư mục gốc cho Prisma 7.10.1. Không giữ nhiều file config có nội dung khác nhau mà chưa xác định file nào nên được dùng. Nếu file <code>prisma.config.ts</code> là config Prisma 7 hợp lệ do a tự viết, không chuyển nó đi chỉ vì tên file — xem nội dung và đối chiếu lỗi thực tế trước.</div><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="tree"><h2>Cấu trúc thư mục</h2><p>Sau khi thiết lập, cấu trúc có thể trông như sau. Thư mục <code>generated/prisma</code> được tạo sau khi chạy <code>prisma generate</code>; không tự sửa code bên trong.</p><div class="filetree">myreads-next/\n├─ app/\n│  └─ page.tsx                 # Trang chính, đọc sách từ database\n├─ actions/\n│  └─ books.ts                 # Server Action cập nhật kệ sách\n├─ lib/\n│  └─ prisma.ts                # Khởi tạo/tái sử dụng Prisma Client\n├─ prisma/\n│  ├─ schema.prisma            # Mô tả model User và Book\n│  ├─ seed.ts                  # Dữ liệu mẫu\n│  └─ migrations/              # Lịch sử các thay đổi schema\n├─ generated/\n│  └─ prisma/                  # Prisma Client được sinh tự động\n├─ .env                        # Biến môi trường, không commit secret\n├─ prisma7.config.ts           # Cấu hình CLI Prisma 7\n├─ package.json                # Dependencies và scripts\n└─ tsconfig.json               # Cấu hình TypeScript</div><p class="muted">File database thực tế nằm theo đường dẫn trong <code>DATABASE_URL</code>. Nếu đổi đường dẫn sau khi đã có dữ liệu, ứng dụng có thể mở một file database khác trống.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="env"><h2>File .env</h2><p><code>.env</code> lưu cấu hình ngoài code. Chương trình đọc biến môi trường này qua <code>process.env</code>, nhờ vậy không cần rải đường dẫn database trong nhiều file.</p><div class="code-box"><div class="code-head"><span><strong>.env</strong> <span class="muted">· Environment variables</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># SQLite local dùng một file thay vì một server database riêng.
+# DATABASE_URL là tên biến; &quot;file:./dev.db&quot; là địa chỉ file SQLite.
+DATABASE_URL=&quot;file:./dev.db&quot;</code></pre></div><div class="warning">Không commit các giá trị bí mật trong <code>.env</code> lên Git. URL SQLite trên phù hợp cho bài thực hành local; triển khai thật cần xem xét vị trí database, backup và môi trường chạy.</div><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="prisma-config"><h2>prisma7.config.ts</h2><p>Đặt file này ở thư mục gốc, cùng cấp với <code>package.json</code>. Nó dành cho <strong>Prisma CLI</strong>, không phải code giao diện.</p><div class="code-box"><div class="code-head"><span><strong>prisma7.config.ts</strong> <span class="muted">· TypeScript</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>// Đọc file .env và nạp biến vào process.env khi chạy Prisma CLI.
+import &quot;dotenv/config&quot;;
+
+// defineConfig xác nhận cấu trúc config theo kiểu TypeScript.
+// env(&quot;DATABASE_URL&quot;) đọc biến môi trường và báo lỗi nếu biến bị thiếu.
+import { defineConfig, env } from &quot;prisma/config&quot;;
+
+export default defineConfig({
+  // File chứa các model User, Book và loại database.
+  schema: &quot;prisma/schema.prisma&quot;,
+
+  migrations: {
+    // Nơi lưu các file migration (các bước thay đổi schema).
+    path: &quot;prisma/migrations&quot;,
+
+    // Khi chạy `npx prisma db seed`, CLI thực thi lệnh này.
+    // tsx cho phép chạy file TypeScript seed.ts trực tiếp.
+    seed: &quot;tsx prisma/seed.ts&quot;,
+  },
+
+  datasource: {
+    // Database mà Prisma CLI dùng cho migrate, introspect, v.v.
+    url: env(&quot;DATABASE_URL&quot;),
+  },
+});</code></pre></div><ul><li><code>schema</code>: chỉ đường dẫn tới schema.</li><li><code>migrations.path</code>: thư mục lưu lịch sử đổi cấu trúc database.</li><li><code>migrations.seed</code>: lệnh dùng để chạy dữ liệu mẫu.</li><li><code>datasource.url</code>: URL database mà CLI sẽ kết nối.</li></ul><p><code>import "dotenv/config"</code> nạp biến từ file .env. <code>env("DATABASE_URL")</code> đọc biến đó theo helper của Prisma. Đây là hai việc liên quan nhưng khác nhau.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="schema"><h2>schema.prisma</h2><p>Schema là bản mô tả cấu trúc dữ liệu để Prisma biết các bảng, cột, khóa và quan hệ. Nó chưa tự tạo bảng trong file SQLite; bước migration ở mục tiếp theo mới cập nhật database.</p><div class="code-box"><div class="code-head"><span><strong>prisma/schema.prisma</strong> <span class="muted">· Prisma Schema</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>// Generator quyết định Prisma Client được sinh ra như thế nào.
+generator client {
+  // Generator được khuyến nghị cho project mới dùng Prisma 7.
+  provider = &quot;prisma-client&quot;
+
+  // Đường dẫn tính tương đối từ thư mục prisma/ tới generated/prisma/.
+  output = &quot;../generated/prisma&quot;
+}
+
+// Chọn loại database. URL được đặt trong prisma7.config.ts ở Prisma 7.
+datasource db {
+  provider = &quot;sqlite&quot;
+}
+
+// Model User tương ứng với bảng người dùng.
+model User {
+  // Primary Key: ID duy nhất cho mỗi user. uuid() tạo UUID dạng chuỗi.
+  id String @id @default(uuid())
+
+  // Không cho phép hai user có cùng email.
+  email String @unique
+
+  // Tên hiển thị của user.
+  name String
+
+  // Một user có thể có nhiều sách. Đây là field quan hệ của Prisma,
+  // không phải cột books được lưu trong bảng User.
+  books Book[]
+}
+
+// Model Book tương ứng với bảng sách.
+model Book {
+  id String @id @default(uuid())
+
+  title String
+
+  // Trạng thái kệ, mặc định là &quot;none&quot;. Server sẽ kiểm tra giá trị hợp lệ.
+  shelf String @default(&quot;none&quot;)
+
+  // Cột thật lưu ID của User sở hữu sách (foreign key).
+  userId String
+
+  // Khai báo quan hệ Book thuộc về một User.
+  // fields=[userId] là cột FK; references=[id] trỏ tới User.id.
+  // onDelete=Cascade: xóa User thì các Book liên quan cũng bị xóa.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}</code></pre></div><h3>Hiểu quan hệ User — Book</h3><div class="flow"><div class="node"><strong>User</strong><br><code>id</code> là khóa chính</div><div class="arrow">1 ───────── N</div><div class="node"><strong>Book</strong><br><code>userId</code> là khóa ngoại</div></div><p><code>User.books</code> và <code>Book.user</code> là field quan hệ dùng khi query. Cột <code>userId</code> mới là nơi lưu ID user trong bảng Book. <code>@unique</code> yêu cầu email không trùng; <code>@default("none")</code> đặt giá trị mặc định cho shelf.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="migration"><h2>Migration &amp; generate</h2><p>Hai việc khác nhau cần phân biệt:</p><ul><li><strong>Migration:</strong> tạo hoặc cập nhật cấu trúc database dựa trên schema.</li><li><strong>Generate:</strong> sinh code Prisma Client TypeScript từ schema để ứng dụng gọi được như <code>prisma.book.findMany()</code>.</li></ul><div class="code-box"><div class="code-head"><span><strong>Tạo bảng và sinh Prisma Client</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Tạo migration tên init, áp dụng nó vào database local.
+# Có thể tạo file prisma/migrations/.../migration.sql.
+npx prisma migrate dev --name init
+
+# Sinh code Prisma Client vào generated/prisma theo cấu hình generator.
+# Với Prisma 7, chạy bước này rõ ràng sau khi schema thay đổi.
+npx prisma generate
+
+# Mở công cụ giao diện để xem và sửa dữ liệu trong database khi phát triển.
+npx prisma studio</code></pre></div><div class="warning"><code>migrate dev</code> dùng trong phát triển. Không tùy tiện xóa thư mục migrations hoặc file .db nếu còn dữ liệu cần giữ. Nếu a đã có database và migration, đừng chạy lại migration đầu tiên mù quáng; hãy đọc thông báo CLI.</div><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="seed"><h2>seed.ts: dữ liệu mẫu</h2><p>Seed là script thêm dữ liệu mẫu để có thể thử giao diện ngay. Config đã khai báo <code>seed: "tsx prisma/seed.ts"</code>, nên sau khi file này tồn tại, chạy <code>npx prisma db seed</code>.</p><div class="code-box"><div class="code-head"><span><strong>prisma/seed.ts</strong> <span class="muted">· TypeScript</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>// Nạp DATABASE_URL từ .env khi chạy file này bằng tsx.
+import &quot;dotenv/config&quot;;
+import { PrismaClient } from &quot;../generated/prisma/client&quot;;
+import { PrismaBetterSqlite3 } from &quot;@prisma/adapter-better-sqlite3&quot;;
+
+// Lấy đúng URL đã cấu hình trong .env.
+const databaseUrl = process.env.DATABASE_URL ?? &quot;file:./dev.db&quot;;
+
+// Adapter là cầu nối giữa Prisma Client và driver SQLite.
+const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
+
+// Tạo client dùng để query database.
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  // upsert = tìm theo email; nếu có thì update, nếu chưa có thì create.
+  // Vì email là @unique nên có thể dùng làm điều kiện where.
+  const user = await prisma.user.upsert({
+    where: { email: &quot;admin@test.com&quot; },
+    update: { name: &quot;Admin&quot; },
+    create: { name: &quot;Admin&quot;, email: &quot;admin@test.com&quot; },
+  });
+
+  // Kiểm tra xem sách mẫu đã có chưa để chạy seed nhiều lần không tạo trùng.
+  const existingBook = await prisma.book.findFirst({
+    where: { userId: user.id, title: &quot;Clean Code&quot; },
+  });
+
+  if (!existingBook) {
+    // user.id là ID vừa lấy/tạo ở bước trên; gán làm foreign key cho Book.
+    await prisma.book.create({
+      data: { title: &quot;Clean Code&quot;, shelf: &quot;read&quot;, userId: user.id },
+    });
+  }
+
+  console.log(&quot;Seed xong. User:&quot;, user.email);
+}
+
+// Bắt lỗi để thấy lý do nếu seed thất bại, sau đó luôn đóng client.
+main()
+  .catch((error: unknown) =&gt; {
+    console.error(&quot;Seed thất bại:&quot;, error);
+    process.exitCode = 1;
+  })
+  .finally(async () =&gt; {
+    await prisma.$disconnect();
+  });</code></pre></div><p><strong>Các ý quan trọng:</strong></p><ul><li><code>new PrismaClient({ adapter })</code> tạo đối tượng Prisma dùng adapter đã cấu hình.</li><li><code>async</code> cho phép dùng <code>await</code> trong hàm.</li><li><code>await</code> đợi Promise hoàn tất trước khi chạy dòng tiếp theo trong hàm đó. Nó không khóa CPU của toàn bộ Node.js.</li><li><code>upsert</code> giúp User mẫu không bị tạo lặp vì email là duy nhất.</li><li><code>findFirst</code> kiểm tra cuốn sách mẫu đã có chưa; nếu chưa có mới thêm.</li><li><code>$disconnect()</code> đóng kết nối khi script kết thúc. Đây hợp lý với script chạy xong rồi thoát, khác với app server lâu dài.</li></ul><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="lib"><h2>lib/prisma.ts: Prisma Client</h2><div class="callout"><strong>Tại sao tách file này?</strong> Nhiều trang và Server Action cần dùng database. Nếu mỗi file tự tạo <code>new PrismaClient()</code>, code bị lặp và trong chế độ hot reload có thể tạo nhiều client. File này tạo một nơi dùng chung.</div><div class="code-box"><div class="code-head"><span><strong>lib/prisma.ts</strong> <span class="muted">· TypeScript</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { PrismaClient } from &quot;../generated/prisma/client&quot;;
+import { PrismaBetterSqlite3 } from &quot;@prisma/adapter-better-sqlite3&quot;;
+
+// Gắn thuộc tính prisma lên globalThis để giữ client qua các lần hot reload
+// trong chế độ development. TypeScript cần biết global này có thuộc tính nào.
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+function createPrismaClient() {
+  // Lấy URL database do Next.js nạp từ .env. Báo lỗi rõ ràng nếu thiếu.
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error(&quot;Thiếu DATABASE_URL trong file .env&quot;);
+  }
+
+  // Adapter chuyển truy vấn của Prisma sang driver better-sqlite3.
+  const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
+
+  // Tạo một Prisma Client mới với adapter đó.
+  return new PrismaClient({ adapter });
+}
+
+// Dùng client đã có nếu tồn tại; nếu chưa thì khởi tạo mới.
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+// Chỉ cache global khi development để tránh tạo nhiều client do hot reload.
+if (process.env.NODE_ENV !== &quot;production&quot;) {
+  globalForPrisma.prisma = prisma;
+}</code></pre></div><p>Đây là mẫu singleton cho môi trường development. Nó không có nghĩa toàn bộ người dùng trên Internet sẽ dùng chung một kết nối vật lý; mỗi process/instance triển khai vẫn có vòng đời riêng. Không gọi <code>$disconnect()</code> sau từng request trong ứng dụng web lâu dài vì điều đó khiến lần query tiếp theo phải tạo kết nối lại.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="page"><h2>app/page.tsx: đọc và hiển thị</h2><p>File này là trang chính trong Next.js App Router. Vì không có chỉ thị <code>"use client"</code>, nó là Server Component mặc định. Do đó, nó có thể gọi database ở phía server và không cần gửi mã truy vấn database ra trình duyệt.</p><div class="code-box"><div class="code-head"><span><strong>app/page.tsx</strong> <span class="muted">· TSX / React</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { prisma } from &quot;../lib/prisma&quot;;
+import { updateShelf } from &quot;../actions/books&quot;;
+
+// Không có &quot;use client&quot;, nên đây là Server Component.
+// Server Component có thể là async và truy vấn database ngay trên server.
+export default async function Home() {
+  // Lấy tất cả sách và thông tin User sở hữu mỗi sách.
+  const books = await prisma.book.findMany({
+    include: { user: true },
+    orderBy: { title: &quot;asc&quot; },
+  });
+
+  return (
+    &lt;main style={{ padding: 40 }}&gt;
+      &lt;h1&gt;Tủ sách MyReads&lt;/h1&gt;
+
+      {books.length === 0 &amp;&amp; &lt;p&gt;Chưa có sách. Hãy chạy lệnh seed.&lt;/p&gt;}
+
+      &lt;ul&gt;
+        {books.map((book) =&gt; (
+          // key giúp React nhận diện mỗi phần tử khi danh sách thay đổi.
+          &lt;li key={book.id} style={{ marginBottom: 20 }}&gt;
+            &lt;strong&gt;{book.title}&lt;/strong&gt; — {book.user.name}
+            &lt;p&gt;Trạng thái hiện tại: {book.shelf}&lt;/p&gt;
+
+            {/* Server Action nhận book.id đã bind và FormData khi submit. */}
+            &lt;form action={updateShelf.bind(null, book.id)}&gt;
+              &lt;select name=&quot;shelf&quot; defaultValue={book.shelf}&gt;
+                &lt;option value=&quot;read&quot;&gt;Đã đọc&lt;/option&gt;
+                &lt;option value=&quot;none&quot;&gt;Chưa xếp kệ&lt;/option&gt;
+              &lt;/select&gt;
+              &lt;button type=&quot;submit&quot;&gt;Cập nhật&lt;/button&gt;
+            &lt;/form&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/main&gt;
+  );
+}</code></pre></div><ul><li><code>findMany</code>: lấy nhiều bản ghi Book.</li><li><code>include: { user: true }</code>: yêu cầu trả kèm user liên quan để dùng <code>book.user.name</code>. Cách Prisma thực hiện truy vấn SQL cụ thể có thể khác tùy cấu hình.</li><li><code>map</code>: biến mỗi bản ghi thành một phần tử giao diện.</li><li><code>key={book.id}</code>: giúp React xác định phần tử nào tương ứng với bản ghi nào khi danh sách cập nhật.</li><li><code>form action</code>: gọi Server Action khi gửi form. Không dùng <code>onChange</code> trong Server Component như ví dụ cũ, vì event handler phía trình duyệt cần Client Component.</li></ul><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="actions"><h2>actions/books.ts: cập nhật dữ liệu</h2><p>Server Action là hàm chạy trên server mà form có thể gọi. Chỉ thị <code>"use server"</code> ở đầu file đánh dấu các hàm export trong file là Server Actions.</p><div class="code-box"><div class="code-head"><span><strong>actions/books.ts</strong> <span class="muted">· TypeScript</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>&quot;use server&quot;;
+
+import { prisma } from &quot;../lib/prisma&quot;;
+import { revalidatePath } from &quot;next/cache&quot;;
+
+// Chỉ cho phép những trạng thái mà UI của ví dụ này hỗ trợ.
+const allowedShelves = new Set([&quot;read&quot;, &quot;none&quot;]);
+
+// Khi bind bookId vào form, Next.js truyền FormData làm đối số tiếp theo.
+export async function updateShelf(bookId: string, formData: FormData) {
+  // FormData là dữ liệu form gửi lên; không mặc định rằng nó luôn hợp lệ.
+  const shelf = formData.get(&quot;shelf&quot;);
+
+  // Xác nhận dữ liệu có phải chuỗi và thuộc danh sách cho phép.
+  if (typeof shelf !== &quot;string&quot; || !allowedShelves.has(shelf)) {
+    throw new Error(&quot;Trạng thái kệ không hợp lệ&quot;);
+  }
+
+  // Cập nhật cột shelf cho bản ghi có ID khớp.
+  await prisma.book.update({
+    where: { id: bookId },
+    data: { shelf },
+  });
+
+  // Yêu cầu Next.js làm mới dữ liệu của route / sau mutation.
+  revalidatePath(&quot;/&quot;);
+}</code></pre></div><p><strong>Vì sao cần kiểm tra <code>shelf</code>?</strong> Dữ liệu gửi từ form có thể bị sửa thủ công trong trình duyệt. Không nên tin dữ liệu client một cách mù quáng. Ví dụ này kiểm tra giá trị nằm trong <code>read</code> hoặc <code>none</code> trước khi update.</p><p><code>revalidatePath("/")</code> yêu cầu Next.js làm mới dữ liệu/render cho route gốc sau mutation để người dùng thấy trạng thái cập nhật. <strong>Ví dụ này chưa có đăng nhập/phân quyền</strong>; không dùng trực tiếp làm ứng dụng thật nơi người dùng phải bị giới hạn quyền sửa sách.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="run"><h2>Chạy và kiểm tra</h2><p>Với các file đã khớp với hướng dẫn, thứ tự lần đầu nên là:</p><div class="code-box"><div class="code-head"><span><strong>Thứ tự chạy trong PowerShell</strong> <span class="muted">· PowerShell</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Tạo migration và các bảng dựa trên schema.prisma.
+npx prisma migrate dev --name init
+
+# Sinh Prisma Client TypeScript sau khi schema đã được cập nhật.
+npx prisma generate
+
+# Thêm user và sách mẫu; config đã chỉ định lệnh tsx prisma/seed.ts.
+npx prisma db seed
+
+# Chạy ứng dụng Next.js trong môi trường phát triển.
+npm run dev</code></pre></div><p>Mở URL mà Next.js hiển thị trong terminal, thường là <code>http://localhost:3000</code>. Nếu a đã từng chạy migration, đừng đổi tên <code>init</code> rồi chạy lại một cách mù quáng — tên migration mới nên phản ánh thay đổi mới, ví dụ <code>add_book_status</code>.</p><h3>Scripts thường có trong package.json của Next.js</h3><div class="code-box"><div class="code-head"><span><strong>Ví dụ scripts tối thiểu</strong> <span class="muted">· JSON</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>{
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;next dev&quot;,
+    &quot;build&quot;: &quot;prisma generate &amp;&amp; next build&quot;,
+    &quot;start&quot;: &quot;next start&quot;,
+    &quot;prisma:generate&quot;: &quot;prisma generate&quot;,
+    &quot;db:migrate&quot;: &quot;prisma migrate dev&quot;,
+    &quot;db:seed&quot;: &quot;prisma db seed&quot;
+  }
+}</code></pre></div><p><strong>Chú ý:</strong> đây là một phần mẫu của <code>package.json</code>, không thay thế nguyên cả file đang có. <code>npm run dev</code> chạy dev server; <code>npm run build</code> tạo bản build để triển khai; <code>npm start</code> chạy bản build đã tạo. Giữ nguyên những scripts khác do create-next-app tạo nếu project đang cần chúng.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="cheatsheet-react"><h2>Cheat sheet React + TypeScript</h2>
+<p>React là thư viện dùng để xây dựng giao diện bằng các component. Trong project Next.js, a vẫn viết React, thường trong file <code>.tsx</code>. Cheat sheet này chỉ tổng hợp cú pháp hay dùng, không thay thế các mục giải thích chi tiết phía trên.</p>
+<div class="callout"><strong>Quy tắc quan trọng:</strong> trong Next.js App Router, component là Server Component theo mặc định. Nếu cần <code>useState</code>, <code>onClick</code>, <code>onChange</code>, <code>useEffect</code> hoặc API trình duyệt, đặt <code>"use client"</code> ở đầu file component đó. Không thêm chỉ vì file có JSX.</div>
+<h3>1. Component, JSX và TypeScript props</h3>
+<p>Component là một hàm trả về giao diện. <code>props</code> là dữ liệu mà component cha truyền vào component con. Khai báo kiểu TypeScript giúp biết component cần nhận dữ liệu gì.</p><div class="code-box"><div class="code-head"><span><strong>Component có props được định kiểu</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>type Book = {
+  id: string;
+  title: string;
+  shelf: &quot;read&quot; | &quot;none&quot;;
+};
+
+type BookCardProps = {
+  book: Book;
+};
+
+export function BookCard({ book }: BookCardProps) {
+  return (
+    &lt;li&gt;
+      &lt;strong&gt;{book.title}&lt;/strong&gt;
+      &lt;span&gt; — {book.shelf}&lt;/span&gt;
+    &lt;/li&gt;
+  );
+}</code></pre></div><ul><li><code>type Book</code>: mô tả dữ liệu một cuốn sách.</li><li><code>shelf: "read" | "none"</code>: giá trị chỉ được phép là một trong hai chuỗi này.</li><li><code>{book.title}</code>: nhúng giá trị JavaScript vào JSX bằng dấu ngoặc nhọn.</li><li><code>export</code>: cho phép file khác import component này.</li></ul>
+<h3>2. Render danh sách bằng map() và key</h3><div class="code-box"><div class="code-head"><span><strong>Render danh sách sách</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>{books.map((book) =&gt; (
+  &lt;BookCard key={book.id} book={book} /&gt;
+))}</code></pre></div><p><code>map()</code> chuyển từng phần tử trong mảng <code>books</code> thành một React element. <code>key</code> giúp React nhận biết phần tử nào thay đổi; dùng ID ổn định, không dùng chỉ số mảng nếu danh sách có thể thay đổi thứ tự.</p>
+<h3>3. State, sự kiện và useState</h3>
+<p><code>state</code> là dữ liệu thay đổi theo tương tác của người dùng. Khi state đổi, React render lại component với giá trị mới.</p><div class="code-box"><div class="code-head"><span><strong>State cho ô tìm kiếm (Client Component)</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>&quot;use client&quot;;
+
+import { useState } from &quot;react&quot;;
+
+export default function BookSearch() {
+  const [query, setQuery] = useState(&quot;&quot;);
+
+  return (
+    &lt;label&gt;
+      Tìm sách:
+      &lt;input
+        value={query}
+        onChange={(event) =&gt; setQuery(event.target.value)}
+        placeholder=&quot;Nhập tên sách&quot;
+      /&gt;
+      &lt;p&gt;Từ khóa hiện tại: {query}&lt;/p&gt;
+    &lt;/label&gt;
+  );
+}</code></pre></div><ul><li><code>useState("")</code> tạo state có giá trị ban đầu là chuỗi rỗng.</li><li><code>query</code> là giá trị hiện tại; <code>setQuery</code> là hàm yêu cầu React cập nhật state.</li><li><code>onChange</code> chạy khi người dùng thay đổi nội dung input.</li><li><code>"use client"</code> phải ở đầu file, trước import, vì component dùng state và sự kiện trình duyệt.</li></ul>
+<h3>4. Điều kiện và className</h3><div class="code-box"><div class="code-head"><span><strong>Render có điều kiện</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>{books.length === 0 ? (
+  &lt;p&gt;Chưa có sách.&lt;/p&gt;
+) : (
+  &lt;ul&gt;
+    {books.map((book) =&gt; (
+      &lt;li key={book.id}&gt;{book.title}&lt;/li&gt;
+    ))}
+  &lt;/ul&gt;
+)}
+
+&lt;div className={isActive ? &quot;active&quot; : &quot;inactive&quot;}&gt;
+  Trạng thái
+&lt;/div&gt;</code></pre></div><p>Toán tử ba ngôi có dạng <code>điều_kiện ? giá_trị_nếu_đúng : giá_trị_nếu_sai</code>. Trong JSX, dùng <code>className</code> thay vì <code>class</code>.</p>
+<h3>5. Khi nào dùng useEffect?</h3>
+<div class="warning"><strong>Đừng dùng useEffect cho mọi thao tác.</strong> Nó phù hợp để đồng bộ với hệ thống bên ngoài React, ví dụ event listener, timer hoặc một thư viện không thuộc React. Trong Next.js, việc lấy dữ liệu từ database ở Server Component thường không cần <code>useEffect</code>.</div><div class="code-box"><div class="code-head"><span><strong>Ví dụ dọn dẹp event listener</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>&quot;use client&quot;;
+
+import { useEffect } from &quot;react&quot;;
+
+export default function OnlineExample() {
+  useEffect(() =&gt; {
+    function handleResize() {
+      console.log(&quot;Kích thước cửa sổ đã thay đổi&quot;);
+    }
+
+    window.addEventListener(&quot;resize&quot;, handleResize);
+    return () =&gt; window.removeEventListener(&quot;resize&quot;, handleResize);
+  }, []);
+
+  return &lt;p&gt;Mở DevTools và thay đổi kích thước cửa sổ.&lt;/p&gt;;
+}</code></pre></div><p>Mảng phụ thuộc <code>[]</code> có nghĩa effect chạy sau lần mount đầu tiên; hàm <code>return</code> bên trong dùng để dọn dẹp listener khi component bị tháo hoặc trước khi effect được chạy lại.</p>
+<a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="cheatsheet-next"><h2>Cheat sheet Next.js App Router</h2>
+<p>Next.js là framework dựa trên React. Project MyReads dùng <strong>App Router</strong>, vì vậy tên file và vị trí trong thư mục <code>app/</code> có ý nghĩa đối với URL và cách trang được render.</p>
+<div class="callout"><strong>Đừng trộn Vite vào project này:</strong> với Next.js, script thông thường là <code>next dev</code>, <code>next build</code>, <code>next start</code>. Nếu <code>package.json</code> vẫn có <code>"dev": "vite"</code>, đó là cấu hình React + Vite và cần kiểm tra lại framework thực sự của project trước khi làm theo phần này.</div>
+<h3>1. Scripts phổ biến</h3><div class="code-box"><div class="code-head"><span><strong>package.json — scripts thường dùng</strong> <span class="muted">· JSON</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>{
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;next dev&quot;,
+    &quot;build&quot;: &quot;next build&quot;,
+    &quot;start&quot;: &quot;next start&quot;,
+    &quot;lint&quot;: &quot;eslint .&quot;
+  }
+}</code></pre></div><p><code>npm run dev</code> chạy máy chủ phát triển. <code>npm run build</code> tạo bản production. <code>npm start</code> chạy bản đã build; thông thường phải build thành công trước. Giữ các script khác do create-next-app tạo nếu chúng còn cần thiết.</p>
+<h3>2. Quy ước file và URL</h3><div class="code-box"><div class="code-head"><span><strong>Cấu trúc App Router ví dụ</strong> <span class="muted">· TEXT</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>app/
+  layout.tsx          # Layout gốc, dùng chung cho các trang
+  page.tsx            # URL: /
+  books/
+    page.tsx          # URL: /books
+    [id]/
+      page.tsx        # URL động: /books/123
+  components/
+    BookSearch.tsx   # Component tái sử dụng, không tự tạo URL
+lib/
+  prisma.ts           # Prisma Client dùng phía server
+actions/
+  books.ts            # Server Actions
+prisma/
+  schema.prisma       # Mô tả model/database</code></pre></div><p><code>page.tsx</code> tạo nội dung cho route. <code>layout.tsx</code> định nghĩa khung UI dùng chung. Thư mục <code>[id]</code> là dynamic route: phần trong ngoặc vuông đại diện cho một giá trị URL.</p>
+<h3>3. Server Component và Client Component</h3>
+<div class="table-wrap"><table><thead><tr><th>Server Component (mặc định)</th><th>Client Component</th></tr></thead><tbody><tr><td>Phù hợp lấy dữ liệu ở server, truy vấn Prisma và giữ bí mật cấu hình.</td><td>Phù hợp state, event handlers, effect và API trình duyệt.</td></tr><tr><td>Không dùng trực tiếp <code>onClick</code>, <code>useState</code> hoặc <code>window</code>.</td><td>Đặt <code>"use client"</code> đầu file component làm điểm vào phía client.</td></tr><tr><td>Ví dụ: <code>app/page.tsx</code> truy vấn danh sách sách.</td><td>Ví dụ: <code>components/BookSearch.tsx</code> có ô tìm kiếm tương tác.</td></tr></tbody></table></div>
+<h3>4. Đọc dữ liệu trong Server Component</h3><div class="code-box"><div class="code-head"><span><strong>app/page.tsx — đọc sách trên server</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { prisma } from &quot;../lib/prisma&quot;;
+
+export default async function HomePage() {
+  // Chỉ chạy truy vấn này phía server.
+  const books = await prisma.book.findMany({
+    orderBy: { title: &quot;asc&quot; },
+  });
+
+  return (
+    &lt;main&gt;
+      &lt;h1&gt;Tủ sách của tôi&lt;/h1&gt;
+      {books.length === 0 ? (
+        &lt;p&gt;Chưa có sách.&lt;/p&gt;
+      ) : (
+        &lt;ul&gt;
+          {books.map((book) =&gt; (
+            &lt;li key={book.id}&gt;{book.title}&lt;/li&gt;
+          ))}
+        &lt;/ul&gt;
+      )}
+    &lt;/main&gt;
+  );
+}</code></pre></div><p><code>async</code> cho phép dùng <code>await</code>. Vì <code>page.tsx</code> là Server Component theo mặc định, nó có thể gọi Prisma trực tiếp mà không cần tạo API route chỉ để tự gọi lại chính backend của mình.</p>
+<h3>5. Server Action và cập nhật dữ liệu</h3><div class="code-box"><div class="code-head"><span><strong>actions/books.ts — cập nhật trạng thái kệ</strong> <span class="muted">· TS</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>&quot;use server&quot;;
+
+import { revalidatePath } from &quot;next/cache&quot;;
+import { prisma } from &quot;../lib/prisma&quot;;
+
+export async function updateShelf(formData: FormData) {
+  const bookId = formData.get(&quot;bookId&quot;);
+  const shelf = formData.get(&quot;shelf&quot;);
+
+  // Kiểm tra dữ liệu nhận từ form trước khi dùng.
+  if (
+    typeof bookId !== &quot;string&quot; ||
+    (shelf !== &quot;read&quot; &amp;&amp; shelf !== &quot;none&quot;)
+  ) {
+    throw new Error(&quot;Dữ liệu không hợp lệ&quot;);
+  }
+
+  await prisma.book.update({
+    where: { id: bookId },
+    data: { shelf },
+  });
+
+  // Yêu cầu Next.js làm mới dữ liệu của trang chủ.
+  revalidatePath(&quot;/&quot;);
+}</code></pre></div><div class="code-box"><div class="code-head"><span><strong>Dùng Server Action từ form trong Server Component</strong> <span class="muted">· TSX</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { updateShelf } from &quot;../actions/books&quot;;
+
+&lt;form action={updateShelf}&gt;
+  &lt;input type=&quot;hidden&quot; name=&quot;bookId&quot; value={book.id} /&gt;
+  &lt;select name=&quot;shelf&quot; defaultValue={book.shelf}&gt;
+    &lt;option value=&quot;read&quot;&gt;Đã đọc&lt;/option&gt;
+    &lt;option value=&quot;none&quot;&gt;Bỏ chọn&lt;/option&gt;
+  &lt;/select&gt;
+  &lt;button type=&quot;submit&quot;&gt;Lưu&lt;/button&gt;
+&lt;/form&gt;</code></pre></div><div class="warning"><strong>Bảo mật:</strong> Server Action có thể được gọi qua request; không xem việc dữ liệu đến từ form là đáng tin. Ứng dụng thực tế cần xác thực người dùng, kiểm tra quyền sở hữu sách và validate mọi giá trị ở phía server.</div>
+<h3>6. Link và biến môi trường</h3><div class="code-box"><div class="code-head"><span><strong>Điều hướng và biến môi trường</strong> <span class="muted">· TSX / ENV</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import Link from &quot;next/link&quot;;
+
+&lt;Link href=&quot;/books&quot;&gt;Xem tất cả sách&lt;/Link&gt;
+
+// .env — biến server riêng tư, không đưa vào code phía client
+DATABASE_URL=&quot;file:./dev.db&quot;
+
+// Chỉ biến có tiền tố NEXT_PUBLIC_ mới dành để đưa ra client.
+// Không đặt mật khẩu database hay secret vào NEXT_PUBLIC_*.</code></pre></div><p>Trong Next.js, dùng <code>Link</code> cho điều hướng nội bộ. Không import file chứa Prisma Client vào Client Component; các thao tác database cần ở phía server.</p>
+<a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="cheatsheet-prisma"><h2>Cheat sheet Prisma ORM 7.10.1 + SQLite</h2>
+<p>Prisma là ORM: nó cho phép code TypeScript truy vấn database bằng API có kiểu dữ liệu, thay vì tự ghép chuỗi SQL cho từng thao tác. Cheat sheet này cố định theo cấu hình của tài liệu MyReads: <strong>Prisma 7.10.1 + SQLite + <code>@prisma/adapter-better-sqlite3</code></strong>.</p>
+<div class="callout"><strong>Ghi chú phiên bản:</strong> Cheat sheet này cố định vào Prisma 7.10.1 để khớp với cấu hình project MyReads mà ta đang xử lý. Đây là lựa chọn để giữ các ví dụ nhất quán, không có nghĩa đây là major version mới nhất. Nếu nâng lên Prisma 8, hãy dùng hướng dẫn nâng cấp riêng và không trộn file config, schema contract hay API giữa hai phiên bản.</div>
+<div class="warning"><strong>Không trộn Prisma 8 vào hướng dẫn này.</strong> Prisma 7 yêu cầu driver adapter cho kết nối trực tiếp. Sau khi đổi major version, hãy đọc hướng dẫn migration tương ứng thay vì copy config giữa các bản.</div>
+<h3>1. Lệnh CLI nên nhớ</h3><div class="code-box"><div class="code-head"><span><strong>PowerShell — lệnh Prisma thường dùng</strong> <span class="muted">· POWERSHELL</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code># Kiểm tra package đang cài trong project.
+npm ls prisma @prisma/client @prisma/adapter-better-sqlite3
+
+# Tạo Prisma Client từ schema hiện tại.
+npx prisma generate
+
+# Tạo migration có tên init và áp dụng lên database phát triển.
+npx prisma migrate dev --name init
+
+# Chạy seed đã khai báo trong cấu hình Prisma.
+npx prisma db seed
+
+# Mở giao diện xem/chỉnh sửa dữ liệu ở local.
+npx prisma studio
+
+# CẨN THẬN: reset có thể xóa dữ liệu development và chạy lại migration.
+# Chỉ dùng khi đã hiểu hậu quả và không có dữ liệu cần giữ.
+npx prisma migrate reset</code></pre></div><p><code>generate</code> sinh Prisma Client theo schema. <code>migrate dev</code> quản lý thay đổi cấu trúc database khi phát triển. <code>db seed</code> thêm dữ liệu mẫu; <code>studio</code> mở UI xem dữ liệu.</p>
+<h3>2. Schema cơ bản</h3><div class="code-box"><div class="code-head"><span><strong>prisma/schema.prisma — User và Book</strong> <span class="muted">· PRISMA</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>generator client {
+  provider = &quot;prisma-client&quot;
+  output   = &quot;../generated/prisma&quot;
+}
+
+datasource db {
+  provider = &quot;sqlite&quot;
+}
+
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  name  String
+  books Book[]
+}
+
+model Book {
+  id     String @id @default(uuid())
+  title  String
+  shelf  String @default(&quot;none&quot;)
+  userId String
+  user   User   @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+}</code></pre></div><ul><li><code>model</code> mô tả một nhóm bản ghi, thường ánh xạ tới bảng database.</li><li><code>@id</code> đánh dấu khóa chính; <code>@unique</code> yêu cầu giá trị không bị trùng.</li><li><code>books Book[]</code> là phía quan hệ nhiều sách của một User; đây không phải cột chứa cả mảng trong bảng User.</li><li><code>userId</code> và <code>@relation</code> mô tả liên kết từ Book đến User.</li><li><code>onDelete: Cascade</code> cho phép database xóa sách liên quan khi User bị xóa; chỉ dùng nếu đúng quy tắc nghiệp vụ.</li></ul>
+<h3>3. CRUD — Create, Read, Update, Delete</h3><div class="code-box"><div class="code-head"><span><strong>Các truy vấn thường dùng</strong> <span class="muted">· TS</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { prisma } from &quot;../lib/prisma&quot;;
+
+// READ: lấy tất cả sách, sắp xếp theo tiêu đề.
+const books = await prisma.book.findMany({
+  orderBy: { title: &quot;asc&quot; },
+});
+
+// READ: tìm một User theo trường unique.
+const user = await prisma.user.findUnique({
+  where: { email: &quot;admin@test.com&quot; },
+});
+
+// CREATE: tạo một bản ghi sách.
+const newBook = await prisma.book.create({
+  data: {
+    title: &quot;Clean Code&quot;,
+    shelf: &quot;read&quot;,
+    userId: &quot;ID_CUA_USER_DA_TON_TAI&quot;,
+  },
+});
+
+// UPDATE: cập nhật một bản ghi theo khóa duy nhất.
+await prisma.book.update({
+  where: { id: newBook.id },
+  data: { shelf: &quot;none&quot; },
+});
+
+// UPSERT: tìm theo email; nếu có thì update, chưa có thì create.
+await prisma.user.upsert({
+  where: { email: &quot;admin@test.com&quot; },
+  update: { name: &quot;Admin mới&quot; },
+  create: { email: &quot;admin@test.com&quot;, name: &quot;Admin&quot; },
+});
+
+// DELETE: xóa một bản ghi theo ID.
+// Kiểm tra quyền và xác nhận trước khi xóa dữ liệu thật.
+await prisma.book.delete({
+  where: { id: newBook.id },
+});</code></pre></div><div class="callout"><strong>Lưu ý về ví dụ CREATE:</strong> <code>ID_CUA_USER_DA_TON_TAI</code> chỉ là placeholder để minh họa. Thay bằng <code>user.id</code> thực tế đã có trong database; nếu ID không tồn tại, ràng buộc quan hệ sẽ khiến truy vấn thất bại.</div>
+<h3>4. Lấy dữ liệu quan hệ, lọc và đếm</h3><div class="code-box"><div class="code-head"><span><strong>Query nâng cao cơ bản</strong> <span class="muted">· TS</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>// Lấy sách cùng với User sở hữu từng sách.
+const booksWithUsers = await prisma.book.findMany({
+  where: { shelf: &quot;read&quot; },
+  orderBy: { title: &quot;asc&quot; },
+  include: { user: true },
+});
+
+// Khi include user: true, mỗi phần tử kết quả có thêm trường user.
+for (const book of booksWithUsers) {
+  console.log(book.title, book.user.name);
+}
+
+// Đếm số sách trên kệ &quot;read&quot;.
+const readCount = await prisma.book.count({
+  where: { shelf: &quot;read&quot; },
+});</code></pre></div><p><code>where</code> lọc dữ liệu; <code>orderBy</code> sắp xếp; <code>include</code> yêu cầu lấy thêm dữ liệu quan hệ; <code>count</code> trả về số bản ghi phù hợp.</p>
+<h3>5. Prisma Client và adapter trong Prisma 7</h3><div class="code-box"><div class="code-head"><span><strong>lib/prisma.ts — tái sử dụng client khi phát triển</strong> <span class="muted">· TS</span></span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy code</button></div><pre><code>import { PrismaClient } from &quot;../generated/prisma/client&quot;;
+import { PrismaBetterSqlite3 } from &quot;@prisma/adapter-better-sqlite3&quot;;
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+function createPrismaClient() {
+  const adapter = new PrismaBetterSqlite3({
+    url: process.env.DATABASE_URL ?? &quot;file:./dev.db&quot;,
+  });
+  return new PrismaClient({ adapter });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== &quot;production&quot;) {
+  globalForPrisma.prisma = prisma;
+}</code></pre></div><p><code>PrismaClient</code> là API TypeScript dùng để query; <code>PrismaBetterSqlite3</code> là adapter kết nối tới driver SQLite. Biến <code>globalForPrisma</code> giúp tái sử dụng instance trong quá trình hot reload ở development.</p>
+<div class="warning"><strong>Database URL phải thống nhất:</strong> dùng cùng URL trong cấu hình CLI và trong runtime. Nếu một bên trỏ tới <code>file:./dev.db</code> nhưng bên kia trỏ tới file khác, migration có thể chạy thành công nhưng trang vẫn hiện dữ liệu rỗng.</div>
+<h3>6. Phân biệt các bước</h3>
+<div class="table-wrap"><table><thead><tr><th>Thao tác</th><th>Ý nghĩa</th><th>Khi nào?</th></tr></thead><tbody><tr><td><code>schema.prisma</code></td><td>Mô tả model, field và quan hệ.</td><td>Khi thiết kế dữ liệu.</td></tr><tr><td><code>migrate dev</code></td><td>Tạo và áp dụng migration để thay đổi cấu trúc database phát triển.</td><td>Khi thay đổi schema cần phản ánh vào database.</td></tr><tr><td><code>generate</code></td><td>Sinh Prisma Client với type theo schema hiện tại.</td><td>Sau thay đổi schema hoặc khi client chưa được sinh.</td></tr><tr><td><code>db seed</code></td><td>Chạy code thêm dữ liệu mẫu.</td><td>Khi cần dữ liệu để thử ứng dụng.</td></tr><tr><td><code>studio</code></td><td>Mở giao diện quản lý dữ liệu.</td><td>Khi muốn xem bản ghi trong database.</td></tr></tbody></table></div>
+<a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="glossary"><h2>Từ điển khái niệm</h2><div class="table-wrap"><table><thead><tr><th>Khái niệm</th><th>Hiểu ngắn gọn</th><th>Ví dụ trong MyReads</th></tr></thead><tbody><tr><td>Database</td><td>Nơi lưu dữ liệu có cấu trúc.</td><td>File SQLite lưu users, books, authors, categories, bảng nối và reviews.</td></tr><tr><td>Schema / Model</td><td>Mô tả dữ liệu và quan hệ.</td><td><code>model Book</code>.</td></tr><tr><td>Migration</td><td>Lịch sử các thay đổi cấu trúc database.</td><td>Tạo bảng Book từ schema.</td></tr><tr><td>ORM</td><td>Lớp ánh xạ giữa object trong code và bảng database.</td><td><code>prisma.book.findMany()</code>.</td></tr><tr><td>Primary Key</td><td>Khóa chính nhận diện mỗi bản ghi.</td><td><code>User.id</code>.</td></tr><tr><td>Foreign Key</td><td>Cột trỏ đến bản ghi ở bảng khác.</td><td><code>Book.userId</code> trỏ tới <code>User.id</code>.</td></tr><tr><td>Adapter</td><td>Cầu nối giữa Prisma Client và driver database.</td><td><code>PrismaBetterSqlite3</code>.</td></tr><tr><td>Seed</td><td>Script thêm dữ liệu mẫu.</td><td>Thêm Admin và Clean Code.</td></tr><tr><td>Server Component</td><td>Component React được render phía server trong App Router.</td><td><code>app/page.tsx</code>.</td></tr><tr><td>Server Action</td><td>Hàm server được gọi qua form/action.</td><td><code>updateShelf</code>.</td></tr><tr><td>Async/await</td><td>Cú pháp làm việc với Promise/bất đồng bộ.</td><td>Đợi truy vấn database hoàn tất.</td></tr><tr><td>Revalidation</td><td>Yêu cầu Next.js làm mới cache/dữ liệu liên quan.</td><td><code>revalidatePath("/")</code>.</td></tr></tbody></table></div><div class="callout"><strong>Hiểu đúng async/await:</strong> <code>await</code> làm hàm async chờ Promise trước khi chạy dòng kế tiếp trong hàm đó; nó không có nghĩa là khóa toàn bộ CPU của server. Trong lúc chờ I/O như database, Node.js vẫn có thể xử lý công việc khác.</div><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="troubleshoot"><h2>Lỗi thường gặp</h2><div class="table-wrap"><table><thead><tr><th>Thông báo / triệu chứng</th><th>Nguyên nhân thường gặp</th><th>Kiểm tra trước</th></tr></thead><tbody><tr><td><code>Failed to parse syntax of config file</code></td><td>CLI không đọc được file config đang nằm ở thư mục gốc hoặc file thuộc định dạng phiên bản khác.</td><td>Đọc <code>prisma.config.ts</code> và <code>prisma7.config.ts</code>; xác định chỉ config đúng đang được dùng.</td></tr><tr><td><code>Cannot find module ../generated/prisma/client</code></td><td>Prisma Client chưa được generate hoặc đường dẫn import sai.</td><td>Chạy <code>npx prisma generate</code>, kiểm tra <code>output</code> trong schema và đường dẫn tương đối.</td></tr><tr><td><code>DATABASE_URL</code> missing</td><td>File .env thiếu biến hoặc chưa được nạp.</td><td>Kiểm tra .env ở thư mục gốc, tên biến phải đúng chính tả.</td></tr><tr><td>Trang hiển thị danh sách rỗng</td><td>Chưa tạo bảng hoặc chưa chạy seed; có thể ứng dụng đang đọc file DB khác.</td><td>Chạy migration, seed; xác minh URL database dùng trong CLI và app giống nhau.</td></tr><tr><td>Lỗi email unique khi seed lần nữa</td><td>Email admin đã tồn tại.</td><td>Dùng upsert/kiểm tra tồn tại như ví dụ seed, không luôn gọi create.</td></tr><tr><td>Event handler không được phép trong Server Component</td><td>Đặt callback như <code>onChange</code> trong file server.</td><td>Dùng form + Server Action hoặc chuyển phần tương tác cần thiết thành Client Component.</td></tr><tr><td>Thay schema nhưng TypeScript không nhận field mới</td><td>Prisma Client sinh ra từ schema cũ.</td><td>Chạy migration phù hợp rồi <code>npx prisma generate</code>.</td></tr></tbody></table></div><p>Nếu gặp lỗi, lưu nguyên văn toàn bộ thông báo và lệnh vừa chạy. Không xóa <code>node_modules</code>, file .db hoặc migration trước khi hiểu lỗi nằm ở đâu.</p><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<section id="sources"><h2>Tài liệu chính thức</h2><p>Tài liệu này được biên soạn theo hướng Prisma ORM 7, với cấu hình SQLite và driver adapter. Khi version thay đổi, nên đối chiếu tài liệu chính thức thay vì trộn code giữa các major version.</p><ul><li><a href="https://www.prisma.io/docs/v7/prisma-orm/quickstart/sqlite" target="_blank" rel="noopener">Prisma 7 Quickstart: SQLite</a></li><li><a href="https://www.prisma.io/docs/v7/prisma-orm/add-to-existing-project/sqlite" target="_blank" rel="noopener">Thêm Prisma 7 vào project SQLite có sẵn</a></li><li><a href="https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/seeding" target="_blank" rel="noopener">Prisma 7: Seeding dữ liệu</a></li><li><a href="https://nextjs.org/docs/app/guides/forms" target="_blank" rel="noopener">Next.js: Forms và Server Actions</a></li><li><a href="https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7" target="_blank" rel="noopener">Prisma ORM 7: các thay đổi khi nâng cấp</a></li></ul><div class="success"><strong>Cách học hiệu quả:</strong> đọc một mục, hiểu file/command làm gì, chạy một bước, kiểm tra kết quả rồi mới sang bước tiếp. Đừng chạy tất cả lệnh một lượt khi cấu hình hiện tại vẫn còn báo lỗi.</div><h3>Tài liệu chính thức cho SQLite driver + SQL</h3>
+<ul>
+<li><a href="https://www.npmjs.com/package/better-sqlite3" target="_blank" rel="noopener noreferrer">better-sqlite3 — package và hướng dẫn cài đặt</a></li>
+<li><a href="https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md" target="_blank" rel="noopener noreferrer">better-sqlite3 API — prepare/get/all/run/transaction</a></li>
+<li><a href="https://nextjs.org/docs/app/getting-started/mutating-data" target="_blank" rel="noopener noreferrer">Next.js — Mutating Data và Server Actions</a></li>
+<li><a href="https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config" target="_blank" rel="noopener noreferrer">Next.js — Node.js runtime và route segment config</a></li>
+</ul>
+<h3>Cheat sheet và tài liệu tham khảo chính thức</h3>
+<ul>
+<li><a href="https://react.dev/learn" target="_blank" rel="noopener noreferrer">React — Learn</a>: component, props, state, event, render danh sách.</li>
+<li><a href="https://nextjs.org/docs/app" target="_blank" rel="noopener noreferrer">Next.js App Router</a>: routing, Server/Client Components và cấu trúc file.</li>
+<li><a href="https://nextjs.org/docs/app/guides/forms" target="_blank" rel="noopener noreferrer">Next.js Forms và Server Actions</a>: submit form từ server.</li>
+<li><a href="https://www.prisma.io/docs/orm/v7" target="_blank" rel="noopener noreferrer">Prisma ORM 7</a>: tài liệu đúng major version của MyReads.</li>
+<li><a href="https://www.prisma.io/docs/orm/v7/prisma-client/queries/crud" target="_blank" rel="noopener noreferrer">Prisma 7 CRUD</a>: create, read, update, delete, upsert.</li>
+<li><a href="https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/sqlite" target="_blank" rel="noopener noreferrer">Prisma 7 + SQLite</a>: cấu hình SQLite và driver adapter.</li>
+</ul><a class="toplink" href="#top">↑ Về đầu trang</a></section>
+<footer class="footer">Tài liệu học tập cá nhân. Code mẫu được viết để minh họa cách kết nối Next.js App Router với SQLite qua Prisma 7.10.1. Trước khi dùng cho ứng dụng thật, hãy bổ sung xác thực, phân quyền, validation phù hợp và kiểm thử.</footer>
+</main>
+<script>
+async function copyCode(button) {
+  const code = button.closest('.code-box').querySelector('pre code').innerText;
+  const original = button.innerText;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      const temp = document.createElement('textarea');
+      temp.value = code;
+      temp.style.position = 'fixed';
+      temp.style.opacity = '0';
+      document.body.appendChild(temp);
+      temp.select();
+      const ok = document.execCommand('copy');
+      temp.remove();
+      if (!ok) throw new Error('copy failed');
+    }
+    button.innerText = 'Đã copy!';
+  } catch (error) {
+    button.innerText = 'Copy lỗi';
+  }
+  setTimeout(() => { button.innerText = original; }, 1600);
+}
+</script>
+</body>
+</html>
